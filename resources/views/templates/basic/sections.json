@@ -1,0 +1,131 @@
+{
+    "banner": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Banner Section",
+        "element": {
+            "images": {
+                "image": {
+                    "size": "1292x474"
+                }
+            },
+            "url": "text",
+            "modal": true
+        }
+    },
+    "advertise": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Advertise Section",
+        "element": {
+            "images": {
+                "image": {
+                    "size": "1880x302"
+                }
+            },
+            "url": "text",
+            "modal":false
+        }
+    },
+    "login": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Login Section",
+        "content": {
+            "images": {
+                "image": {
+                    "size": "636x648"
+                }
+            },
+            "heading": "text",
+            "sub_heading":"text"
+        }
+    },
+    "register": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Register Section",
+        "content": {
+            "images": {
+                "image": {
+                    "size": "526x660"
+                }
+            },
+            "heading": "text",
+            "sub_heading":"text"
+        }
+    },
+    "service": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Service Section",
+        "element": {
+            "images": {
+                "image": {
+                    "size": "50x50"
+                }
+            },
+            "title": "text",
+            "short_detail": "text",
+            "modal": false
+        }
+    },
+    "policy_pages": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Policy Pages",
+        "element": {
+            "title": "text",
+            "details": "textarea-nic",
+            "modal": false
+        }
+    },
+    "social_icon": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Social Icons",
+        "element": {
+            "title": "text",
+            "social_icon": "icon",
+            "url": "text",
+            "modal": true
+        }
+    },
+    "footer": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Footer Section",
+        "content":{
+            "subscribe_title":"text",
+            "connect_title":"text"
+        },
+        "element": {
+            "images":{
+                "image":{
+                    "size":"70x40"
+                }
+            },
+            "modal": true
+        }
+        
+    },
+    "contact_us": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Contact Us",
+        "content": {
+            "images":{
+                "image":{
+                    "size":"480x430"
+                }
+            },
+            "title":"text",
+            "subtitle":"text",
+            "contact_number": "text",
+            "contact_email": "text",
+            "address":"text"           
+        }
+    }
+
+
+}

@@ -1,0 +1,249 @@
+/*Banner Section*/
+.banner-slider {
+    position: relative;
+}
+.owl-dots {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    left: 0;
+    width: 100%;
+    bottom: 20px;
+    z-index: 1;
+    .owl-dot {
+        margin: 3px;
+        span {
+            width: 7px;
+            height: 7px;
+            background: $white;
+            display: block;
+            @include border-radius(50%);
+        }
+        &.active {
+            span {
+                width: 12px;
+                height: 12px;
+                background: $base;
+            }
+        }
+    }
+}
+.banner__wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    @include breakpoint(sm) {
+        padding: 0 15px;
+    }
+    &-category {
+        width: 250px;
+    }
+    &-category, &-products {
+        &-inner {
+            height: 100%;
+            position: relative;
+            z-index: 99;
+            display: flex;
+            flex-direction: column;
+            &-header {
+                background: $base;
+                padding: 12px 10px 8px;
+                margin: 0;
+                text-align: center;color: $white;
+                @include border-radius(5px 5px 0 0)
+            }
+        }
+        .category-link {
+            flex-grow: 1;
+        }
+    }
+    &-products {
+        width: 100%;
+        margin-top: 20px;
+        @include breakpoint(md) {
+            margin-top: 30px;
+        }
+        @include breakpoint(xl) {
+            width: 250px;
+            margin-top: 0;
+        }
+        &-inner {
+            height: 100%;
+            &-body {
+                flex-grow: 1;
+                padding: 15px;
+                background: $title;
+                @include border-radius(0 0 5px 5px);
+            }
+        }
+    }
+    &-content {
+        &-inner {
+            height: 240px;
+            padding: 12px;
+            border: 1px solid $border-color;
+            @include border-radius(3px);
+            background: $section-bg;
+            a {
+                height: 100%;
+                overflow: hidden;
+                img {
+                    height: 100%;
+                    object-fit: cover;
+                    @include border-radius(3px);
+                }
+            }
+        }
+        width: 100%;
+        @include breakpoint(md) {
+            &-inner {
+                height: 300px;
+            }
+        }
+        @include breakpoint(lg) {
+            width: calc(100% - 250px);
+            padding-left: 12px;
+            &-inner {
+                height: 450px;
+            }
+        }
+        @include breakpoint(xl) {
+            width: calc(100% - 500px);
+            &-inner {
+                height: 500px;
+            }
+            padding: 0 24px;
+        }
+    }
+}
+.banner__wrapper-content {
+    &-inner {
+        a {
+            display: block;
+            img {
+                width: 100%;
+            }
+        }
+    }
+}
+@include breakpoint(lg) {
+    .category-link {
+        padding: 8px 0;
+        position: relative;
+        border: 1px solid $border-color;
+        @include border-radius(0 0 5px 5px);
+        background: $white;
+        li {
+            padding: 0;
+            a {
+                font-family: $heading;
+                font-size: 14px;
+                padding: 2px 12px;
+                color: $title;
+                display: flex;
+                justify-content: space-between;
+            }
+            >a {
+                padding: 5px 20px;
+                @include breakpoint(max-xxl) {
+                    padding: 2px 20px ;
+                }
+            }
+            .category-sublink {
+                position: absolute;
+                top: 0;
+                height: 100%;
+                padding: 8px 0;
+                background: $section-bg;
+                width: 200px;
+                border-left: 1px solid  $border-color;
+                visibility: hidden;
+                opacity: 0;
+                left: 100%;
+            }
+            &:hover {
+                >.category-sublink {
+                    visibility: visible;
+                    opacity: 1;
+                }
+                >a {
+                    background: rgba($color:$title, $alpha:.07);
+                    padding-left: 23px;
+                }
+            }
+        }
+    }
+    @media screen and (max-width:1439px) {
+        .category-link {
+            padding: 8px 0;
+        }
+
+    }
+    @media screen and (max-width:1399px) {
+        .category-link {
+            padding: 8px 0;
+        }
+        .category-link-wrapper {
+            width: 220px;
+        }
+
+    }
+}
+.cate-icon {
+    > a {
+        &::after {
+            @include line-icon('\f105');
+        }
+    }
+}
+.deal__item {
+    background: $white;
+    display: flex;
+    align-items: center;
+    @include border-radius(4px);
+    padding: 10px;
+    &:not(:last-child) {
+        margin-bottom: 15px;
+    }
+    &-img {
+        width: 80px;
+        img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            @include border-radius(4px);
+        }
+    }
+    &-cont {
+        color: $title;
+        padding-left: 15px;
+        .price {
+            margin: 0;
+            font-size: 18px;
+            line-height: 1;
+        }
+        del {
+            font-size: 14px;
+            line-height: 1;
+        }
+    }
+}
+.product-max-xl-slider {
+    width: 100%;
+    @include breakpoint(xl) {
+        max-height: 420px;
+        overflow-y: auto;
+        &::-webkit-scrollbar {
+            display: none;
+        }
+        &::-moz-scrollbar {
+            display: none;
+        }
+        &::-ms-scrollbar {
+            display: none;
+        }
+    }
+}
+.banner-section {
+    position: relative;
+}

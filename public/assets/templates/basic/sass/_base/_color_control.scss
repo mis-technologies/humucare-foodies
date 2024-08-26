@@ -1,0 +1,187 @@
+.bg--body {
+    background-color: $body-bg !important;
+}
+.bg--section {
+    background-color: $section-bg !important;
+}
+
+.btn--base,
+.bg--base {
+    background-color: $base !important;
+}
+.btn--primary,
+.bg--primary {
+    background-color: $primary-color !important;
+}
+.btn--secondary,
+.bg--secondary {
+    background-color: $secondary-color !important;
+}
+
+.btn--success,
+.bg--success {
+    background-color: $success-color !important;
+}
+
+.btn--danger,
+.bg--danger {
+    background-color: $danger-color !important;
+}
+
+.btn--warning,
+.bg--warning {
+    background-color: $warning-color !important;
+}
+.btn--info,
+.bg--info {
+    background-color: $info-color !important;
+}
+.btn--dark,
+.bg--dark {
+    background-color: $dark-color !important;
+}
+.btn--white,
+.bg--white {
+    background-color: $white !important;
+}
+[class*="btn--"] {
+    color: $white;
+    font-weight: 500;
+    &:hover {
+        color: $white;
+    }
+}
+.btn--warning,
+.badge--warning,
+.btn--white,
+.badge--white {
+    color: $title;
+    &:hover {
+        color: $title;
+    }
+}
+.btn--black,
+.badge--black,
+.bg--black {
+    background-color: $black-color !important;
+}
+.btn--title,
+.badge--title,
+.bg--title {
+    background-color: $title !important;
+}
+
+.text--primary {
+    color: $primary-color !important;
+}
+.text--secondary {
+    color: $secondary-color !important;
+}
+
+.text--success {
+    color: $success-color !important;
+}
+
+.text--danger {
+    color: $danger-color !important;
+}
+
+.text--warning {
+    color: $warning-color !important;
+}
+
+.text--info {
+    color: $info-color !important;
+}
+
+.text--dark {
+    color: $dark-color !important;
+}
+
+.text--white {
+    color: $white !important;
+    p,
+    ul li,
+    ul li a,
+    span {
+        color: $light-color;
+    }
+}
+
+.text--black {
+    color: $black-color !important;
+}
+
+.text--body {
+    color: $body-color !important;
+}
+
+.text--base {
+    color: $base !important;
+}
+
+.text--title {
+    color: $title !important;
+}
+.text--star {
+    color: $star !important;
+}
+.bg--transparent {
+    background-color: transparent !important;
+}
+.bg--none {
+    background: none !important;
+}
+
+.bg--base-2 {
+    background-color: $base-2 !important;
+}
+.bg--base-3 {
+    background-color: $base-3 !important;
+}
+.bg--base-4 {
+    background-color: $base-4 !important;
+}
+
+.text--base-2 {
+    color: $base-2 !important;
+}
+.text--base-3 {
+    color: $base-3 !important;
+}
+.text--base-4 {
+    color: $base-4 !important;
+}
+
+.badge {
+    border-radius: 15px !important;
+    padding: 5px 15px 3px;
+    position: relative;
+    border-radius: 5px;
+    font-size: 13px;
+}
+.badge--warning {
+    background-color: rgba(255, 159, 67, 0.1);
+    border: 1px solid #ff9f43;
+    color: #ff9f43;
+}
+.badge--success {
+    background-color: rgba(40, 199, 111, 0.1);
+    border: 1px solid #2ecc71;
+    color: #2ecc71;
+}
+.badge--danger {
+    background-color: rgba(234, 84, 85, 0.1);
+    border: 1px solid #ea5455;
+    color: #ea5455;
+}
+.badge--primary {
+    background-color: rgba(83, 82, 237, 0.1);
+    border: 1px solid #5352ed;
+    color: #5352ed;
+}
+.badge--dark {
+    background-color: rgba(0, 0, 0, 0.1);
+    border: 1px solid #000000;
+    color: #000000;
+}
