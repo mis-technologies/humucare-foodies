@@ -75,6 +75,37 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-control-label font-weight-bold">@lang('Product Liters')
+                                    <span class="text-danger">(Optional)</span>
+                                </label>
+
+                                <select name="liter" class="form-control" id="">
+
+                                    <option selected disabled>Choose Liter rate to sell at.</option>
+                                    @for ($i = 1; $i <= 1; $i++)
+                                        <option value="{{$i}}">{{ $i}} {{Str::plural('Liter', $i)}}</option>
+                                    @endfor
+
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-control-label font-weight-bold">@lang('Price Per Product Liters')
+                                    <span class="text-danger">(Optional)</span>
+                                </label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">{{ $general->cur_sym }}</span>
+                                    </div>
+                                    <input type="number" step="any" class="form-control" name="price_per_liter" value="{{ old('price_per_liter') }}" min="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
                             <div class="form-group ">
                                 <label class="form-control-label font-weight-bold">@lang('Stock Quantity')
                                     <span class="text-danger">*</span>

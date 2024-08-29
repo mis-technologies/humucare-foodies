@@ -13,7 +13,13 @@ $policyPages = getContent('policy_pages.element', false, null, true);
     <div style="position: fixed; bottom: 20px; left: 20px; z-index: 999;">
 
 
-        <a href="tel:+4401214484501" style="height: 100px; padding: 20px; background-color: rgb(225, 225, 225); border-radius: 20px;" class="{{ menuActive('track-order') }}">
+        <a href="tel:+4401214484501"
+        style="
+         height: 50px;
+         padding: 10px;
+         background-color: rgb(225, 225, 225);
+         border-radius: 20px;"
+        class="{{ menuActive('track-order') }}">
             @lang('Call For Party Services')  <i class="fa fa-phone"></i>
         </a>
      </div>

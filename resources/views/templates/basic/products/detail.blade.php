@@ -70,6 +70,23 @@
                         </div>
                         <div class="repeat--item">
                             <ul class="lists">
+                                @if ($product_price_per_liter != null)
+
+                                <li>
+                                    <span class="name">@lang('Price for liters'):</span>
+                                    <h5 class="info m-0 l-price">
+
+
+                                    </h5>
+                                </li>
+                                @endif
+                                <li>
+                                    <span class="name">@lang('Price for quantity'):</span>
+                                    <h5 class="info m-0 quan-price">
+
+
+                                    </h5>
+                                </li>
                                 <li>
                                     <span class="name">@lang('Total Price')</span>
                                     <h5 class="info m-0 total-price">
@@ -82,8 +99,54 @@
                                 </li>
                             </ul>
                         </div>
+                        @if ($product_price_per_liter != null)
+
+                        <div class="repeat--item">
+                            <div class="">
+
+                                <div class="row">
+
+                                    <div class="col-2 mt-1">
+
+                                        <span class="name">@lang('Liters'):</span>
+
+                                    </div>
+                                    <div class="col-6 d-flex">
+
+
+
+                                        <select style="border-radius:20px" name="product_price_per_liter" class="form-control productLiter" id="">
+
+                                            <option selected disabled>Choose in liters </option>
+
+                                            @for ($i = $product_price_per_liter->liter; $i <= 20; $i+= $product_price_per_liter->liter)
+
+                                            <option value="{{$i}}">{{$i}} {{Str::plural('Liter', $i)}}</option>
+
+                                            @endfor
+
+                                        </select>
+
+                                    </div>
+
+                                    <div class="col-4 mt-1">
+                                     <p style="border: solid; border-width: 1px; border-radius: 10px; border-color: blue; color: blue; padding: 10px; ">
+                                        {{$general->cur_sym}} <span class="product_per_price">{{$product_price_per_liter->price ? $product_price_per_liter->price : 0 }}</span> / {{$product_price_per_liter->liter}} {{Str::plural('Liter', $product_price_per_liter->liter)}}
+                                    </p>
+                                    </div>
+
+                                    <input type="hidden" value="{{$product_price_per_liter->price}}" class="price_per_liter" id="">
+
+                                </div>
+
+                            </div>
+                        </div>
+                        @endif
+
                         <div class="repeat--item">
                             <div class="single-add-cart-area">
+                                <span class="name">@lang('Quantity'):</span>
+
                                 <div class="cart-plus-minus">
                                     <div class="cart-decrease qtybutton dec">
                                         <i class="las la-minus"></i>
@@ -338,7 +401,7 @@
 </section>
 @endsection
 
-@push('script')
+{{-- @push('script')
 <script>
     (function ($) {
         "use script";
@@ -376,4 +439,65 @@
         }
     })(jQuery);
 </script>
+@endpush --}}
+
+@push('script')
+<script>
+    (function ($) {
+        "use strict";
+
+        $('.cart-decrease').on('click', function () {
+            var quantity = $('input[name="quantity"]').val();
+            if (quantity > 0) {
+                TotalPrice();
+            } else {
+                $('input[name="quantity"]').val(1);
+                notify('error', 'You have to order a minimum amount of one.');
+            }
+        });
+
+        $('.cart-increase').on('click', function () {
+            TotalPrice();
+        });
+
+        $('input[name="quantity"]').on('focusout', function () {
+            var quantity = $(this).val();
+            if (quantity > 0) {
+                TotalPrice();
+            } else {
+                $('input[name="quantity"]').val(1);
+                TotalPrice();
+                notify('error', 'You have to order a minimum amount of one.');
+            }
+        });
+
+        // Listen for changes in the liters dropdown
+        $('select[name="product_price_per_liter"]').on('change', function () {
+            TotalPrice(); // Update total price when liters change
+        });
+
+        function TotalPrice() {
+            var quantity = $('input[name="quantity"]').val();
+            var productPrice = $('.product-price').text();
+            var splitPrice = productPrice.split("{{ $general->cur_sym }}");
+            var price = parseFloat(splitPrice[1]);
+
+            var selectedLiter = $('select[name="product_price_per_liter"]').val();
+            var literPrice = $('.product_per_price').text();
+            var lp = parseFloat(literPrice);
+            var productPerLiterPrice = selectedLiter ? selectedLiter * lp : 0;
+
+            console.log(literPrice);
+
+            var quanPrice = (quantity * price);
+            var totalPrice = (quantity * price) + productPerLiterPrice;
+            var lPrice = productPerLiterPrice;
+            $('.total-price').text("{{ $general->cur_sym }}" + totalPrice.toFixed(2));
+            $('.quan-price').text("{{ $general->cur_sym }}" + quanPrice.toFixed(2));
+            $('.l-price').text("{{ $general->cur_sym }}" + lPrice.toFixed(2));
+        }
+    })(jQuery);
+</script>
 @endpush
+
+

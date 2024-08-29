@@ -6,8 +6,8 @@
             </div>
             <form action="{{ route('products') }}" method="GET" class="search-form d-lg-none mb-4">
                 <div class="input-group search--group">
-                    <input type="text" class="form-control" name="search" placeholder="@lang('Search here')" value="{{ request()->search ?? null }}">
-                    <button class="cmn--btn" type="submit">@lang('Search') </button>
+                    <input type="text" class="form-control" name="search" placeholder="@lang('Search')" value="{{ request()->search ?? null }}">
+                    <button class="cmn--btn" type="submit">  @lang('Search') </button>
                 </div>
             </form>
             <div class="category-link-area  @if (request()->routeIs('home')) d-lg-none @endif">
@@ -39,13 +39,6 @@
                         @lang('Track Order')
                     </a>
                 </li>
-                <li style="position: fixed; bottom: 20px; right: 20px; z-index: 999;">
-
-                    <a href="tel:+4401214484501" style="height: 100px; padding: 20px;" class="{{ menuActive('track-order') }}">
-                        @lang('Party Services')  <i class="fa fa-phone"></i>
-                    </a>
-                </li>
-
             </ul>
             <div class="sign-in-up d-none d-md-block font-heading change-language2">
                 <span class="text-white"><i class="las la-user"></i></span>

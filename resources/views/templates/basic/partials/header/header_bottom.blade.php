@@ -3,14 +3,14 @@
         <div class="header-wrapper">
             <div class="logo me-lg-4 me-auto">
                 <a href="{{ route('home') }}">
-                  
-                    <img src="{{ getImage(imagePath()['logoIcon']['path'] . '/logo.png') }}" alt="@lang('logo')">
-                     <h5 align="center">Shop</h5>
+
+                    <img style="height: 200px; width: 200px;" src="{{ getImage(imagePath()['logoIcon']['path'] . '/foodies logo.png') }}" alt="@lang('logo')">
+                     {{-- <h5 align="center">Shop</h5> --}}
                 </a>
-               
+
             </div>
-             
-                
+
+
             <form action="{{ route('products') }}" method="GET" class="search-form d-none d-lg-block">
                 <div class="input-group search--group">
                     <input type="text" class="form-control" name="search" placeholder="@lang('Search here')" value="{{ request()->search ?? null }}">

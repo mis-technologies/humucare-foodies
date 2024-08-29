@@ -6,6 +6,7 @@ use App\Models\Cart;
 use App\Models\Coupon;
 use App\Models\GeneralSetting;
 use App\Models\Product;
+use App\Models\ProductPricePerLiter;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -21,6 +22,7 @@ class CartController extends Controller {
         $validator = Validator::make($request->all(), [
             'product_id' => 'required|integer',
             'quantity'   => 'required|integer|gt:0',
+            'liter'   => 'integer',
         ]);
 
         if ($validator->fails()) {
@@ -29,6 +31,7 @@ class CartController extends Controller {
 
         $product = Product::findOrFail($request->product_id);
         $user_id = auth()->user()->id ?? null;
+        $product_price_per_liter = ProductPricePerLiter::whereProductId($product->id)->first();
 
 
         if ($request->quantity > $product->quantity) {
@@ -53,6 +56,8 @@ class CartController extends Controller {
                 $cart->user_id    = auth()->user()->id;
                 $cart->product_id = $request->product_id;
                 $cart->quantity   = $request->quantity;
+                $cart->liter   = $request->liter;
+                $cart->price_per_liter = $request->pricePerLiter;
                 $cart->save();
 
             }
@@ -77,6 +82,8 @@ class CartController extends Controller {
                     "image"         => $product->image,
                     "product_id"    => $product->id,
                     "quantity"      => $request->quantity,
+                    "liter"         => $request->liter,
+                    "pricePerLiter" => $request->pricePerLiter,
                 ];
             }
 
@@ -201,7 +208,8 @@ class CartController extends Controller {
                 $sumPrice = 0;
                 $product  = Product::active()->where('id', $cart['product_id'])->first();
                 $price = productPrice($product);
-                $sumPrice = $sumPrice + ($price * $cart['quantity']);
+                $ppl = $cart['liter'] * $cart['pricePerLiter'];
+                $sumPrice = $sumPrice + ($price * $cart['quantity']) + $ppl;
                 $total[]  = $sumPrice;
             }
         }

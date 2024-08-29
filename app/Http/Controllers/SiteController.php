@@ -11,6 +11,7 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Page;
 use App\Models\Product;
+use App\Models\ProductPricePerLiter;
 use App\Models\SubCategory;
 use App\Models\Subscriber;
 use App\Models\SupportMessage;
@@ -187,7 +188,7 @@ class SiteController extends Controller {
         $emptyMessage = 'No product found';
 
         $products = Product::active()->with('reviews');
-        
+
         if ($request->route()->getName() == 'hot_deals.products') {
             $pageTitle = 'Hot Deal Products';
             $products  = $products->where('hot_deals', 1);
@@ -232,12 +233,12 @@ class SiteController extends Controller {
         foreach ($products->get() as $product) {
             $categoryArray[] = $product->category_id;
             $brandArray[]    = $product->brand_id;
-        } 
+        }
 
         $categoryId = array_unique($categoryArray);
         $brandId    = array_unique($brandArray);
 
-        
+
         $categoryList = Category::whereIn('id', $categoryId)->where('status', 1)->withCount('product')->get();
         $brands       = Brand::whereIn('id', $brandId)->where('status', 1)->withCount('product')->get();
         $products     = $products->latest()->paginate(getPaginate());
@@ -278,7 +279,7 @@ class SiteController extends Controller {
             });
         }
 
-        
+
         if ($request->brandId) {
             $productList = $productList->where('brand_id', $request->brandId);
         }
@@ -297,7 +298,7 @@ class SiteController extends Controller {
         if ($request->subcategoryId) {
             $productFilter = $productList->where('subcategory_id', $request->subcategoryId);
         }
-        
+
         $productFilter = $this->productsQuery($productFilter, $request);
 
         if ($request->paginate == null) {
@@ -426,11 +427,13 @@ class SiteController extends Controller {
             $order->where('order_status', 3);
         })->groupBy('product_id')->selectRaw('*, sum(quantity) as sum')->orderBy('sum', 'desc')->distinct('product_id')->pluck('product_id');
 
+        $product_price_per_liter = ProductPricePerLiter::whereProductId($id)->first();
+        
         $topProducts = Product::active()->where('sale_count', '!=', 0)->orderBy('sale_count', 'desc')->latest()->with('reviews')->take(8)->get();
         $seoContents['image']               = getImage(imagePath()['product']['thumb']['path'] .'/'.$product->image, imagePath()['product']['thumb']['size']);
         $seoContents['image_size']          = imagePath()['product']['thumb']['size'];
 
-        return view($this->activeTemplate . 'products.detail', compact('pageTitle', 'product', 'relatedProduct', 'topProducts', 'emptyMessage','seoContents'));
+        return view($this->activeTemplate . 'products.detail', compact('product_price_per_liter','pageTitle', 'product', 'relatedProduct', 'topProducts', 'emptyMessage','seoContents'));
     }
 
     public function trackOrder() {

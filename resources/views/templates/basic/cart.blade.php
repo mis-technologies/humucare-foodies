@@ -5,12 +5,15 @@
         <div class="cart-header">
             <h4 class="title mb-3">@lang('My Cart')</h4>
         </div>
+
         <table class="table cmn--table cart-table">
             <thead>
                 <tr>
                     <th>@lang('Product')</th>
                     <th>@lang('Unit Price')</th>
                     <th>@lang('Quantity')</th>
+                    <th>@lang('Liter')</th>
+                    <th>@lang('Price Per Liter')</th>
                     <th>@lang('Subtotal')</th>
                     <th>@lang('Remove')</th>
                 </tr>
@@ -28,7 +31,11 @@
                 }else{
                 $price = showDiscountPrice($cart->price,$cart->discount,$cart->discount_type);
                 }
-                $subTotal = $price * $cart->quantity;
+
+                    $ppl = $cart->liter * $cart->pricePerLiter;
+                    $subTotal = $price * $cart->quantity + ($ppl);
+
+
                 @endphp
 
                 <tr>
@@ -63,7 +70,25 @@
                             </div>
                         </div>
                     </td>
+
+                    <td data-label="@lang('Liter')">
+                        <span class="liter">
+                            {{ $cart->liter }}
+                        </span>
+                    </td>
+                    {{-- @php
+                        dd($cart);
+                    @endphp --}}
+                    <td data-label="@lang('Price Per Liter')">
+                        <span class="pppp">
+                            {{ $general->cur_sym }}
+                            <span class="ppl">
+                                {{ getAmount($cart->pricePerLiter) }}
+                            </span>
+                        </span>
+                    </td>
                     <td data-label="@lang('Subtotal')">
+
                         <span class="subtotal">
                             {{ $general->cur_sym }}{{ getAmount($subTotal) }}
                         </span>
@@ -145,7 +170,7 @@
         let quantity
         $('.cart-decrease').click(function(){
             currentRow = $(this).closest("tr");
-            quantity = currentRow.find('input[name="quantity"]').val(); 
+            quantity = currentRow.find('input[name="quantity"]').val();
             if(quantity > 0){
                 CartCalculation(currentRow)
             }else{
@@ -159,7 +184,7 @@
         });
         $('input[name="quantity"]').on('focusout',function(){
             currentRow = $(this).closest("tr");
-            quantity = currentRow.find('input[name="quantity"]').val(); 
+            quantity = currentRow.find('input[name="quantity"]').val();
             if(quantity > 0){
                 CartCalculation(currentRow)
             }else{
@@ -170,13 +195,16 @@
         });
 
         function CartCalculation(currentRow){
-            
+
             let product_id = currentRow.find('.productName').data('product_id');
-            let quantity = currentRow.find('input[name="quantity"]').val(); 
+            let quantity = currentRow.find('input[name="quantity"]').val();
             let productPrice = currentRow.find('.price').text();
             let splitPrice = productPrice.split("{{ $general->cur_sym }}");
             let price = parseFloat(splitPrice[1]);
-            let totalPrice = quantity * price;
+            let ppLiter = currentRow.find('.ppl').text();
+            let liter = currentRow.find('.liter').text();
+            let ppl = ppLiter*liter;
+            let totalPrice = quantity * price + ppl;
             currentRow.find('.subtotal').text("{{ $general->cur_sym }}"+totalPrice.toFixed(2));
 
             $('.coupon-show').addClass('d-none')
@@ -221,7 +249,7 @@
                         var price = parseFloat(splitPrice[1]);
                         totalArr.push(price);
                     });
-                });  
+                });
             });
             for (var i = 0; i < totalArr.length; i++) {
                 subtotal += totalArr[i];

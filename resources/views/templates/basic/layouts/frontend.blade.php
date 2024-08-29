@@ -43,7 +43,7 @@
             });
         });
         // modal show
-        $(document).on('click','.quickView',function (e) { 
+        $(document).on('click','.quickView',function (e) {
             e.preventDefault();
             var product_id = parseInt($(this).data('product_id'));
             $.ajax({
@@ -54,8 +54,8 @@
                     $("#productmodalView").html(response);
                 }
             });
-            
-        }); 
+
+        });
         // add to cart
         getCartCount();
         getWishlistCount();
@@ -64,14 +64,22 @@
             e.preventDefault();
             var product_id = $(this).data('product_id');
             var quantity = $('.productQuantity').val();
+            var liter = $('.productLiter').val();
+            var pricePerLiter = parseInt($('.price_per_liter').val());
             if(quantity == undefined){
                 quantity = 1;
             }
+            if(liter == undefined){
+                liter = 0;
+                pricePerLiter = 0;
+            }
+            console.log(pricePerLiter);
+
             $.ajax({
                 headers: {"X-CSRF-TOKEN": "{{ csrf_token() }}",},
                 method: "POST",
                 url: "{{ route('add-to-cart') }}",
-                data: {product_id:product_id,quantity:quantity},
+                data: {product_id:product_id,quantity:quantity, liter:liter, pricePerLiter:pricePerLiter},
                 success: function (response) {
                     if(response.success) {
                         notify('success', response.success);
@@ -82,7 +90,7 @@
                 }
             });
         })
-        // fetch cart count     
+        // fetch cart count
         function getCartCount(){
             $.ajax({
                type: "GET",
@@ -119,7 +127,7 @@
                url: "{{ route('get-wishlist-count') }}",
                success: function (response) {
                     var total = Object.keys(response).length;
-                    $.each(response, function (indexInArray, value) { 
+                    $.each(response, function (indexInArray, value) {
                         $(document).find(`[data-product_id='${value.product_id}']`).closest('.add-wishlist').addClass('active');
                     });
                    $('.show-wishlist-count').text(total);

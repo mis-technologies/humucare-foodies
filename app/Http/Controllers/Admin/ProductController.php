@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\GeneralSetting;
 use App\Models\Product;
 use App\Models\ProductGallery;
+use App\Models\ProductPricePerLiter;
 use App\Models\Review;
 use App\Rules\FileTypeValidate;
 use Illuminate\Http\Request;
@@ -67,6 +68,8 @@ class ProductController extends Controller {
             'digi_file'      => ['required_if:file_type,1', new FileTypeValidate(['pdf', 'docx', 'txt', 'zip', 'xlx', 'csv', 'ai', 'psd', 'pptx'])],
             'digi_link'      => 'required_if:file_type,2',
         ]);
+
+
 
         $filename = '';
         $path     = imagePath()['product']['thumb']['path'];
@@ -159,6 +162,16 @@ class ProductController extends Controller {
             $files->save();
         }
 
+        if ($request->hasAny('price_per_liter') && $request->hasAny('liter')) {
+
+            $product_price_per_liter = new ProductPricePerLiter();
+            $product_price_per_liter->price = $request->price_per_liter;
+            $product_price_per_liter->liter = $request->liter;
+            $product_price_per_liter->product_id = $product->id;
+            $product_price_per_liter->save();
+
+        }
+
         $notify[] = ['success', 'Product added successfully.'];
         return redirect()->back()->withNotify($notify);
     }
@@ -171,7 +184,8 @@ class ProductController extends Controller {
         },
         ])->orderBy('name')->get();
         $brands = Brand::where('status', 1)->orderBy('name')->get();
-        return view('admin.product.edit', compact('pageTitle', 'product', 'allCategory', 'brands'));
+        $ppl = ProductPricePerLiter::whereProductId($id)->first();
+        return view('admin.product.edit', compact('ppl','pageTitle', 'product', 'allCategory', 'brands'));
     }
 
     public function update(Request $request, $id) {
@@ -299,6 +313,16 @@ class ProductController extends Controller {
         $product->digi_link        = $request->digi_link;
         $product->image            = $filename;
         $product->save();
+
+        if ($request->hasAny('price_per_liter') && $request->hasAny('liter')) {
+
+            $product_price_per_liter =ProductPricePerLiter::whereProductId($id)->first();
+            $product_price_per_liter->price = $request->price_per_liter;
+            $product_price_per_liter->liter = $request->liter;
+            // $product_price_per_liter->product_id = $product->id;
+            $product_price_per_liter->save();
+
+        }
 
         $notify[] = ['success', 'Product updated successfully'];
         return redirect()->back()->withNotify($notify)->withInput();
