@@ -314,7 +314,7 @@ class ProductController extends Controller {
         $product->image            = $filename;
         $product->save();
 
-        if ($request->hasAny('price_per_liter') && $request->hasAny('liter')) {
+        if ($request->price_per_liter != null && $request->liter != null) {
 
             $product_price_per_liter =ProductPricePerLiter::whereProductId($id)->first();
             $product_price_per_liter->price = $request->price_per_liter;

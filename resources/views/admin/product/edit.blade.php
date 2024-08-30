@@ -15,7 +15,8 @@
                             <label class="form-control-label font-weight-bold">@lang('Name')
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="name" class="form-control" placeholder="e.g: Product Name" value="{{ $product->name }}" />
+                            <input type="text" name="name" class="form-control" placeholder="e.g: Product Name"
+                                value="{{ $product->name }}" />
                         </div>
                         <div class="form-group col-md-6">
                             <label class="form-control-label font-weight-bold">@lang('Brands')
@@ -24,7 +25,8 @@
                             <select class="form-control" name="brand">
                                 <option value="" selected disabled>@lang('Select one')</option>
                                 @foreach ($brands as $brand)
-                                <option value="{{ $brand->id }}" {{ $product->brand_id == $brand->id ? 'selected' : ''}}>
+                                <option value="{{ $brand->id }}" {{ $product->brand_id == $brand->id ? 'selected' :
+                                    ''}}>
                                     {{ __($brand->name) }}</option>
                                 @endforeach
                             </select>
@@ -36,7 +38,8 @@
                             <select class="form-control" name="category_id" id="category">
                                 <option value="" selected disabled>@lang('Select one')</option>
                                 @foreach ($allCategory as $category)
-                                <option data-subcategories="{{ $category->subcategories }}" value="{{ $category->id }}" {{ $product->category_id == $category->id ?'selected' : '' }}>
+                                <option data-subcategories="{{ $category->subcategories }}" value="{{ $category->id }}"
+                                    {{ $product->category_id == $category->id ?'selected' : '' }}>
                                     {{ __($category->name) }}</option>
                                 @endforeach
                             </select>
@@ -58,7 +61,8 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text">{{ $general->cur_sym }}</span>
                                     </div>
-                                    <input type="number" step="any" class="form-control" name="price" value="{{ getAmount($product->price) }}" min="0">
+                                    <input type="number" step="any" class="form-control" name="price"
+                                        value="{{ getAmount($product->price) }}" min="0">
                                 </div>
                             </div>
                         </div>
@@ -67,7 +71,8 @@
                                 <label class="form-control-label font-weight-bold">@lang('Product SKU')
                                     <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" name="product_sku" class="form-control" value="{{ $product->product_sku }}" />
+                                <input type="text" name="product_sku" class="form-control"
+                                    value="{{ $product->product_sku }}" />
                             </div>
                         </div>
                     </div>
@@ -80,10 +85,10 @@
 
                                 <select name="liter" class="form-control" id="">
 
-                                    <option selected value="{{$ppl->liter}}">{{$ppl->liter}}</option>
-                                    @for ($i = 1; $i <= 1; $i++)
-                                        <option value="{{$i}}">{{ $i}} {{Str::plural('Liter', $i)}}</option>
-                                    @endfor
+                                    <option selected value="{{$ppl->liter ?? null}}">{{$ppl->liter ?? null}} </option>
+                                    @for ($i = 1; $i <= 1; $i++) <option value="{{$i}}">{{ $i}} {{Str::plural('Liter',
+                                        $i)}}</option>
+                                        @endfor
 
                                 </select>
                             </div>
@@ -97,7 +102,7 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text">{{ $general->cur_sym }}</span>
                                     </div>
-                                    <input type="number" step="any" class="form-control" name="price_per_liter" value="{{ $ppl->price }}" min="0">
+                                    <input type="number" step="any" class="form-control" name="price_per_liter" value="{{$ppl->price ?? null}}" min="0">
                                 </div>
                             </div>
                         </div>
@@ -108,7 +113,8 @@
                                 <label class="form-control-label font-weight-bold">@lang('Stock Quantity')
                                     <span class="text-danger">*</span>
                                 </label>
-                                <input type="number" name="quantity" class="form-control" value="{{ $product->quantity }}" />
+                                <input type="number" name="quantity" class="form-control"
+                                    value="{{ $product->quantity }}" />
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -117,11 +123,14 @@
                                     <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
-                                    <input type="number" step="any" name="discount" class="form-control" value="{{ getAmount($product->discount) }}"/>
+                                    <input type="number" step="any" name="discount" class="form-control"
+                                        value="{{ getAmount($product->discount) }}" />
                                     <div class="input-group-append">
                                         <select name="discount_type" class="input-group-text">
-                                            <option value="1" {{ $product->discount_type == 1 ? 'selected':'' }}>{{__($general->cur_sym) }}</option>
-                                            <option value="2" {{ $product->discount_type == 2 ? 'selected':'' }}>@lang('%')</option>
+                                            <option value="1" {{ $product->discount_type == 1 ? 'selected':''
+                                                }}>{{__($general->cur_sym) }}</option>
+                                            <option value="2" {{ $product->discount_type == 2 ? 'selected':''
+                                                }}>@lang('%')</option>
                                         </select>
                                     </div>
                                 </div>
@@ -142,8 +151,10 @@
                                         class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <select class="form-control" id="digital_item" name="digital_item">
-                                        <option value="1" {{ $product->digital_item == 1 ? 'selected':'' }}>@lang('Yes')</option>
-                                        <option value="0" {{ $product->digital_item == 0 ? 'selected':'' }}>@lang('No')</option>
+                                        <option value="1" {{ $product->digital_item == 1 ? 'selected':'' }}>@lang('Yes')
+                                        </option>
+                                        <option value="0" {{ $product->digital_item == 0 ? 'selected':'' }}>@lang('No')
+                                        </option>
                                     </select>
                                 </div>
                             </div>
@@ -154,8 +165,10 @@
                                     <span class="text-danger">*</span></label>
                                 <select class="form-control" id="file_type" name="file_type">
                                     <option value="" selected disabled>@lang('Select one')</option>
-                                    <option value="1" {{ $product->file_type == 1 ? 'selected':'' }}>@lang('File Upload')</option>
-                                    <option value="2" {{ $product->file_type == 2 ? 'selected':'' }}>@lang('Link')</option>
+                                    <option value="1" {{ $product->file_type == 1 ? 'selected':'' }}>@lang('File
+                                        Upload')</option>
+                                    <option value="2" {{ $product->file_type == 2 ? 'selected':'' }}>@lang('Link')
+                                    </option>
                                 </select>
                             </div>
                         </div>
@@ -169,12 +182,14 @@
                                     <label class="custom-file-label" for="inputGroupFile01">@lang('Choose file')</label>
                                 </div>
                                 <small class="mt-2 text-facebook">@lang('Supported files'):
-                                    <b>@lang('pdf'),@lang('docx'), @lang('txt'), @lang('zip'), @lang('xlx'), @lang('csv'),
+                                    <b>@lang('pdf'),@lang('docx'), @lang('txt'), @lang('zip'), @lang('xlx'),
+                                        @lang('csv'),
                                         @lang('ai'), @lang('psd'), @lang('pptx')
                                     </b>
                                 </small>
                                 @if ($product->digi_file)
-                                <a href="{{ route('admin.product.digital.file.download', $product->id) }}" class="mr-3 text--primary">
+                                <a href="{{ route('admin.product.digital.file.download', $product->id) }}"
+                                    class="mr-3 text--primary">
                                     <i class="las la-file"></i> @lang('Digital File')
                                 </a>
                                 @endif
@@ -185,7 +200,8 @@
                                 <label class="form-control-label font-weight-bold">@lang('Link Address')
                                     <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" name="digi_link" class="form-control" placeholder="@lang('Link')" value="{{ $product->digi_link }}">
+                                <input type="text" name="digi_link" class="form-control" placeholder="@lang('Link')"
+                                    value="{{ $product->digi_link }}">
                             </div>
                         </div>
                     </div>
@@ -200,13 +216,15 @@
                         <label class="form-control-label font-weight-bold">@lang('Summary')
                             <span class="text-danger">*</span>
                         </label>
-                        <textarea name="summary" class="form-control" cols="2" rows="2">{{ $product->summary }}</textarea>
+                        <textarea name="summary" class="form-control" cols="2"
+                            rows="2">{{ $product->summary }}</textarea>
                     </div>
                     <div class="form-group">
                         <label class="form-control-label font-weight-bold">@lang('Description')
                             <span class="text-danger">*</span>
                         </label>
-                        <textarea rows="5" class="form-control border-radius-5 nicEdit" name="description">{{ $product->description }}</textarea>
+                        <textarea rows="5" class="form-control border-radius-5 nicEdit"
+                            name="description">{{ $product->description }}</textarea>
                     </div>
                 </div>
             </div>
@@ -226,10 +244,12 @@
                                 <div class="form-group">
                                     <div class="input-group mb-md-0 mb-4">
                                         <div class="col-md-5">
-                                            <input name="feature_title[]" class="form-control" type="text" value="{{ $v->feature_title }}" required placeholder="@lang('Title')">
+                                            <input name="feature_title[]" class="form-control" type="text"
+                                                value="{{ $v->feature_title }}" required placeholder="@lang('Title')">
                                         </div>
                                         <div class="col-md-5">
-                                            <input name="feature_desc[]" class="form-control" type="text" value="{{ $v->feature_desc }}" required placeholder="@lang('Title')">
+                                            <input name="feature_desc[]" class="form-control" type="text"
+                                                value="{{ $v->feature_desc }}" required placeholder="@lang('Title')">
                                         </div>
                                         <div class="col-md-2 mt-md-0 mt-2 text-right">
                                             <span class="input-group-btn">
@@ -258,16 +278,20 @@
                                 <div class="payment-method-header">
                                     <div class="thumb">
                                         <div class="avatar-preview">
-                                            <div class="profilePicPreview" style="background-image: url('{{ getImage(imagePath()['product']['thumb']['path'] . '/' . $product->image, imagePath()['product']['thumb']['size']) }}')"></div>
+                                            <div class="profilePicPreview"
+                                                style="background-image: url('{{ getImage(imagePath()['product']['thumb']['path'] . '/' . $product->image, imagePath()['product']['thumb']['size']) }}')">
+                                            </div>
                                         </div>
                                         <div class="avatar-edit">
-                                            <input type="file" name="image" class="profilePicUpload" id="image" accept=".png, .jpg, .jpeg"/>
+                                            <input type="file" name="image" class="profilePicUpload" id="image"
+                                                accept=".png, .jpg, .jpeg" />
                                             <label for="image" class="bg--primary"><i class="la la-pencil"></i></label>
                                         </div>
                                     </div>
                                 </div>
                                 <small class="mt-2 text-facebook">@lang('Supported files'):
-                                    <b>@lang('jpeg'), @lang('jpg').</b> @lang('Image will be resized into '){{  imagePath()['product']['thumb']['size'] }}@lang('px')
+                                    <b>@lang('jpeg'), @lang('jpg').</b> @lang('Image will be resized into '){{
+                                    imagePath()['product']['thumb']['size'] }}@lang('px')
                                 </small>
                             </div>
                         </div>
@@ -276,30 +300,33 @@
                                 <div class="form-group col-md-6">
                                     <label class="form-control-label font-weight-bold">@lang('Display Hot Deals')
                                         <span class="text-danger">*</span></label>
-                                    <input type="checkbox" data-width="100%" data-onstyle="-success" data-offstyle="-danger"
-                                        data-toggle="toggle" data-on="@lang('Yes')" data-off="@lang('No')" name="hot_deals"
-                                        @if ($product->hot_deals) checked @endif>
+                                    <input type="checkbox" data-width="100%" data-onstyle="-success"
+                                        data-offstyle="-danger" data-toggle="toggle" data-on="@lang('Yes')"
+                                        data-off="@lang('No')" name="hot_deals" @if ($product->hot_deals) checked
+                                    @endif>
                                 </div>
                                 <div class="form-group col-md-6">
                                     <label class="form-control-label font-weight-bold">@lang('Display Featured Product')
                                         <span class="text-danger">*</span></label>
-                                    <input type="checkbox" data-width="100%" data-onstyle="-success" data-offstyle="-danger"
-                                        data-toggle="toggle" data-on="@lang('Yes')" data-off="@lang('No')"
-                                        name="featured_product" @if ($product->featured_product) checked @endif>
+                                    <input type="checkbox" data-width="100%" data-onstyle="-success"
+                                        data-offstyle="-danger" data-toggle="toggle" data-on="@lang('Yes')"
+                                        data-off="@lang('No')" name="featured_product" @if ($product->featured_product)
+                                    checked @endif>
                                 </div>
                                 <div class="form-group col-md-6">
                                     <label class="form-control-label font-weight-bold">@lang('Display Today Deals')
                                         <span class="text-danger">*</span></label>
-                                    <input type="checkbox" data-width="100%" data-onstyle="-success" data-offstyle="-danger"
-                                        data-toggle="toggle" data-on="@lang('Yes')" data-off="@lang('No')"
-                                        name="today_deals" @if ($product->today_deals) checked @endif>
+                                    <input type="checkbox" data-width="100%" data-onstyle="-success"
+                                        data-offstyle="-danger" data-toggle="toggle" data-on="@lang('Yes')"
+                                        data-off="@lang('No')" name="today_deals" @if ($product->today_deals) checked
+                                    @endif>
                                 </div>
                                 <div class="form-group col-md-6">
                                     <label class="form-control-label font-weight-bold">@lang('Product Status')
                                         <span class="text-danger">*</span></label>
-                                    <input type="checkbox" data-width="100%" data-onstyle="-success" data-offstyle="-danger"
-                                        data-toggle="toggle" data-on="@lang('Enable')" data-off="@lang('Disabled')" name="status"
-                                        @if($product->status) checked @endif>
+                                    <input type="checkbox" data-width="100%" data-onstyle="-success"
+                                        data-offstyle="-danger" data-toggle="toggle" data-on="@lang('Enable')"
+                                        data-off="@lang('Disabled')" name="status" @if($product->status) checked @endif>
                                 </div>
                             </div>
                         </div>
@@ -325,16 +352,19 @@
                                             <input type="hidden" name="imageId[]" value="{{ $gallery->id }}">
                                             <div class="profilePicPreview"
                                                 style="background-image: url({{ getImage(imagePath()['product']['gallery']['path'] . '/' . $gallery->image, imagePath()['product']['gallery']['size']) }})">
-                                                <button type="button" class="remove-image removeBtn d-block" data-id="{{ $product->id }}" data-image="{{ $gallery }}">
+                                                <button type="button" class="remove-image removeBtn d-block"
+                                                    data-id="{{ $product->id }}" data-image="{{ $gallery }}">
                                                     <i class="fa fa-times"></i>
                                                 </button>
                                             </div>
                                         </div>
                                         <div class="avatar-edit">
-                                            <input type="file" class="profilePicUpload" name="files[]" id="{{ $k }}" accept=".png, .jpg, .jpeg">
+                                            <input type="file" class="profilePicUpload" name="files[]" id="{{ $k }}"
+                                                accept=".png, .jpg, .jpeg">
                                             <label for="{{ $k }}" class="bg--success">@lang('Upload Image')</label>
                                             <small class="mt-2 text-facebook">@lang('Supported files'):
-                                                <b>@lang('jpeg'), @lang('jpg').</b> @lang('Image will be resized into '){{  imagePath()['product']['gallery']['size'] }}@lang('px')
+                                                <b>@lang('jpeg'), @lang('jpg').</b> @lang('Image will be resized into
+                                                '){{ imagePath()['product']['gallery']['size'] }}@lang('px')
                                             </small>
                                         </div>
                                     </div>
