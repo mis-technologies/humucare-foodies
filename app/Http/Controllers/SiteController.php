@@ -12,6 +12,7 @@ use App\Models\OrderDetail;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductPricePerLiter;
+use App\Models\ProductPricePerMilliliter;
 use App\Models\SubCategory;
 use App\Models\Subscriber;
 use App\Models\SupportMessage;
@@ -246,6 +247,70 @@ class SiteController extends Controller {
         return view($this->activeTemplate . 'products.all', compact('pageTitle', 'products', 'brands', 'minPrice', 'maxPrice', 'emptyMessage', 'categoryList'));
     }
 
+    // public function homeService(Request $request) {
+
+    //     $pageTitle    = 'All Products';
+    //     $emptyMessage = 'No product found';
+
+    //     $products = Product::active()->with('reviews');
+
+    //     if ($request->route()->getName() == 'hot_deals.products') {
+    //         $pageTitle = 'Hot Deal Products';
+    //         $products  = $products->where('hot_deals', 1);
+    //     }
+
+    //     if ($request->route()->getName() == 'featured.products') {
+    //         $pageTitle = 'Featured Products';
+    //         $products  = $products->where('featured_product', 1);
+    //     }
+
+    //     if ($request->route()->getName() == 'best-selling.products') {
+    //         $pageTitle = 'Best Selling Products';
+
+    //         $products = $products->where('sale_count','!=',0)->orderBy('sale_count','desc');
+    //     }
+
+    //     if ($request->search) {
+    //         $pageTitle     = 'Search Results';
+    //         $searchKeyword = $request->search;
+    //         $products      = $products->where(function ($q) use ($searchKeyword) {
+    //             $q->orWhere('description', 'LIKE', '%' . $searchKeyword . '%')
+    //                 ->orWhere('features', 'LIKE', '%' . $searchKeyword . '%')
+    //                 ->orWhere('slug', 'LIKE', '%' . $searchKeyword . '%')
+    //                 ->orWhere('summary', 'LIKE', '%' . $searchKeyword . '%')
+    //                 ->orWhere('name', 'LIKE', '%' . $searchKeyword . '%')->orWhereHas('category', function ($category) use ($searchKeyword) {
+    //                 $category->where('name', 'like', "%$searchKeyword%");
+    //             })->orWhereHas('subcategory', function ($subcategory) use ($searchKeyword) {
+    //                 $subcategory->where('name', 'like', "%$searchKeyword%");
+    //             })->orWhereHas('brand', function ($brand) use ($searchKeyword) {
+    //                 $brand->where('name', 'like', "%$searchKeyword%");
+    //             });
+    //         });
+    //     }
+
+    //     $cloneProducts = clone $products;
+    //     $minPrice      = $cloneProducts->min('price') ?? 0;
+    //     $maxPrice      = $cloneProducts->max('price') ?? 0;
+
+    //     $categoryArray = [];
+    //     $brandArray    = [];
+
+    //     foreach ($products->get() as $product) {
+    //         $categoryArray[] = $product->category_id;
+    //         $brandArray[]    = $product->brand_id;
+    //     }
+
+    //     $categoryId = array_unique($categoryArray);
+    //     $brandId    = array_unique($brandArray);
+
+
+    //     $categoryList = Category::whereIn('id', $categoryId)->where('status', 1)->withCount('product')->get();
+    //     $brands       = Brand::whereIn('id', $brandId)->where('status', 1)->withCount('product')->get();
+    //     $products     = $products->latest()->paginate(getPaginate());
+
+    //     return view($this->activeTemplate . 'products.all', compact('pageTitle', 'products', 'brands', 'minPrice', 'maxPrice', 'emptyMessage', 'categoryList'));
+    // }
+
     public function productsFilter(Request $request) {
 
         $productList = Product::active()->with('reviews');
@@ -428,12 +493,13 @@ class SiteController extends Controller {
         })->groupBy('product_id')->selectRaw('*, sum(quantity) as sum')->orderBy('sum', 'desc')->distinct('product_id')->pluck('product_id');
 
         $product_price_per_liter = ProductPricePerLiter::whereProductId($id)->first();
-        
+        $product_price_per_milliliter = ProductPricePerMilliliter::whereProductId($id)->first();
+
         $topProducts = Product::active()->where('sale_count', '!=', 0)->orderBy('sale_count', 'desc')->latest()->with('reviews')->take(8)->get();
         $seoContents['image']               = getImage(imagePath()['product']['thumb']['path'] .'/'.$product->image, imagePath()['product']['thumb']['size']);
         $seoContents['image_size']          = imagePath()['product']['thumb']['size'];
 
-        return view($this->activeTemplate . 'products.detail', compact('product_price_per_liter','pageTitle', 'product', 'relatedProduct', 'topProducts', 'emptyMessage','seoContents'));
+        return view($this->activeTemplate . 'products.detail', compact('product_price_per_milliliter','product_price_per_liter','pageTitle', 'product', 'relatedProduct', 'topProducts', 'emptyMessage','seoContents'));
     }
 
     public function trackOrder() {

@@ -29,7 +29,8 @@
                             <h5 class="title">{{ __($product->name) }}</h5>
                             <div class="ratings-area">
                                 @if ($general->display_stock == 1)
-                                <div class="{{ $product->quantity == 0 ? 'badge badge--danger' : 'badge badge--success' }} badge-sm badge-warning me-3">
+                                <div
+                                    class="{{ $product->quantity == 0 ? 'badge badge--danger' : 'badge badge--success' }} badge-sm badge-warning me-3">
                                     {{$product->quantity == 0 ? 'Out of Stock' : 'In Stock' }}
                                 </div>
                                 @endif
@@ -72,9 +73,19 @@
                             <ul class="lists">
                                 @if ($product_price_per_liter != null)
 
-                                <li>
+                                <li class=" d-none lit-display">
                                     <span class="name">@lang('Price for liters'):</span>
                                     <h5 class="info m-0 l-price">
+
+
+                                    </h5>
+                                </li>
+                                @endif
+                                @if ($product_price_per_milliliter != null)
+
+                                <li class=" d-none mil-display">
+                                    <span class="name">@lang('Price for milli-liters'):</span>
+                                    <h5 class="info m-0 ml-price">
 
 
                                     </h5>
@@ -99,9 +110,32 @@
                                 </li>
                             </ul>
                         </div>
-                        @if ($product_price_per_liter != null)
 
                         <div class="repeat--item">
+
+                            <div class="d-flex row">
+
+                                <div class="col-6 lit-box">
+                                    <h6 class="m-2">In liters </h6>
+                                    <label class="switch">
+                                        <input id="lit-but" type="checkbox">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+
+                                <div class="col-6 mil-box">
+                                    <h6 class="m-2">In Milliliters </h6>
+                                    <label class="switch">
+                                        <input id="mil-but" type="checkbox">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div>
+                        @if ($product_price_per_liter != null)
+
+                        <div class="d-none forLiters repeat--item">
                             <div class="">
 
                                 <div class="row">
@@ -115,27 +149,84 @@
 
 
 
-                                        <select style="border-radius:20px" name="product_price_per_liter" class="form-control productLiter" id="">
+                                        <select style="border-radius:20px" name="product_price_per_liter"
+                                            class="form-control productLiter" id="">
 
                                             <option selected disabled>Choose in liters </option>
 
-                                            @for ($i = $product_price_per_liter->liter; $i <= 20; $i+= $product_price_per_liter->liter)
+                                            @for ($i = $product_price_per_liter->liter; $i <= 20;
+                                                $i+=$product_price_per_liter->liter)
 
-                                            <option value="{{$i}}">{{$i}} {{Str::plural('Liter', $i)}}</option>
+                                                <option value="{{$i}}">{{$i}} {{Str::plural('Liter', $i)}}</option>
 
-                                            @endfor
+                                                @endfor
 
                                         </select>
 
                                     </div>
 
                                     <div class="col-4 mt-1">
-                                     <p style="border: solid; border-width: 1px; border-radius: 10px; border-color: blue; color: blue; padding: 10px; ">
-                                        {{$general->cur_sym}} <span class="product_per_price">{{$product_price_per_liter->price ? $product_price_per_liter->price : 0 }}</span> / {{$product_price_per_liter->liter}} {{Str::plural('Liter', $product_price_per_liter->liter)}}
-                                    </p>
+                                        <p
+                                            style="border: solid; border-width: 1px; border-radius: 10px; border-color: blue; color: blue; padding: 10px; ">
+                                            {{$general->cur_sym}} <span
+                                                class="product_per_price">{{$product_price_per_liter->price ?
+                                                $product_price_per_liter->price : 0 }}</span> /
+                                            {{$product_price_per_liter->liter}} {{Str::plural('Liter',
+                                            $product_price_per_liter->liter)}}
+                                        </p>
                                     </div>
 
-                                    <input type="hidden" value="{{$product_price_per_liter->price}}" class="price_per_liter" id="">
+                                    <input type="hidden" value="{{$product_price_per_liter->price}}"
+                                        class="price_per_liter" id="">
+
+                                </div>
+
+                            </div>
+                        </div>
+                        @endif
+
+                        @if ($product_price_per_milliliter != null)
+                        <div class="d-none forMilliliters repeat--item">
+                            <div class="">
+
+                                <div class="row">
+
+                                    <div class="col-2 mt-1">
+
+                                        <span class="name">@lang('Milli-Liters'):</span>
+
+                                    </div>
+                                    <div class="col-6 d-flex">
+
+                                        <select style="border-radius:20px" name="product_price_per_milliliter"
+                                            class="form-control productMilliliter" id="">
+
+                                            <option selected disabled>Choose in Milliliters </option>
+
+                                            @for ($i = $product_price_per_milliliter->milliliter; $i <= 1000;
+                                                $i+=$product_price_per_milliliter?->milliliter)
+
+                                                <option value="{{$i}}">{{$i}} {{Str::plural('Milliliter', $i)}}</option>
+
+                                                @endfor
+
+                                        </select>
+
+                                    </div>
+
+                                    <div class="col-4 mt-1">
+                                        <p
+                                            style="border: solid; border-width: 1px; border-radius: 10px; border-color: blue; color: blue; padding: 10px; ">
+                                            {{$general->cur_sym}} <span
+                                                class="product_per_milliliter_price">{{$product_price_per_milliliter->price ?
+                                                $product_price_per_milliliter->price : 0 }}</span> /
+                                            {{$product_price_per_milliliter->milliliter}} {{Str::plural('Milliliter',
+                                            $product_price_per_milliliter->milliliter)}}
+                                        </p>
+                                    </div>
+
+                                    <input type="hidden" value="{{$product_price_per_milliliter->price}}"
+                                        class="price_per_milliliter" id="">
 
                                 </div>
 
@@ -294,11 +385,11 @@
                                                     <div class="ratings">
                                                         @for($i = 1; $i <= $review->stars; $i++)
                                                             <i class="las la-star"></i>
-                                                        @endfor
+                                                            @endfor
 
-                                                        @for($k = 1; $k <= 5-$review->stars; $k++)
-                                                            <i class="lar la-star"></i>
-                                                        @endfor
+                                                            @for($k = 1; $k <= 5-$review->stars; $k++)
+                                                                <i class="lar la-star"></i>
+                                                                @endfor
                                                     </div>
                                                 </div>
                                                 <div class="entry-content">
@@ -324,7 +415,7 @@
                             @foreach ($relatedProduct as $product)
                             <div class="col-lg-3 col-xxl-3 col-md-6 col-sm-10">
                                 @php
-                                    $price = productPrice($product);
+                                $price = productPrice($product);
                                 @endphp
                                 <div class="product__item">
                                     <div class="product__item-img">
@@ -334,10 +425,10 @@
                                                 alt="product">
                                         </a>
                                         @php
-                                            if($product->discount != 0 || $product->today_deals == 1){
-                                                $discount = discountText($product,$general);
-                                                echo $discount;
-                                            }
+                                        if($product->discount != 0 || $product->today_deals == 1){
+                                        $discount = discountText($product,$general);
+                                        echo $discount;
+                                        }
                                         @endphp
                                         <div class="product-right-btn">
                                             <a href="#0" data-bs-toggle="modal" data-bs-target="#quickView"
@@ -351,16 +442,19 @@
                                     </div>
                                     <div class="product__item-cont">
                                         <h6 class="title">
-                                            <a href="{{ route('product.detail',['id'=>$product->id,'name'=>slug($product->slug)]) }}">
+                                            <a
+                                                href="{{ route('product.detail',['id'=>$product->id,'name'=>slug($product->slug)]) }}">
                                                 {{__($product->name)}}
                                             </a>
                                         </h6>
                                         @if ($general->display_stock == 1)
-                                        <span class="info {{ $product->quantity == 0 ? 'text--danger' : 'text--success' }}">
+                                        <span
+                                            class="info {{ $product->quantity == 0 ? 'text--danger' : 'text--success' }}">
                                             {{$product->quantity == 0 ? 'Out of Stock' : 'In Stock' }}
                                         </span>
                                         @endif
-                                        <div class="d-flex justify-content-between align-items-center @if ($general->display_stock != 1) mt-2 @endif">
+                                        <div
+                                            class="d-flex justify-content-between align-items-center @if ($general->display_stock != 1) mt-2 @endif">
                                             <div class="ratings">
                                                 @php
                                                 $star = showProductRatings($product->avg_rate);
@@ -381,7 +475,7 @@
                                         </div>
                                         <div class="hover-cont-wrapper">
                                             <div class="hover-cont-area">
-                                                <a href="#0" class="cmn--btn cart-number-btn add-to-cart"
+                                                <a href="#0" class="cmn--btn cart-number-btn add-to-cart-related"
                                                     data-product_id="{{ $product->id }}">
                                                     @lang('Add To Cart')
                                                 </a>
@@ -475,6 +569,10 @@
         $('select[name="product_price_per_liter"]').on('change', function () {
             TotalPrice(); // Update total price when liters change
         });
+        // Listen for changes in the milliliters dropdown
+        $('select[name="product_price_per_milliliter"]').on('change', function () {
+            TotalPrice(); // Update total price when milliliters change
+        });
 
         function TotalPrice() {
             var quantity = $('input[name="quantity"]').val();
@@ -487,17 +585,79 @@
             var lp = parseFloat(literPrice);
             var productPerLiterPrice = selectedLiter ? selectedLiter * lp : 0;
 
-            console.log(literPrice);
+            var selectedMilliliter = $('select[name="product_price_per_milliliter"]').val();
+            var milliliterPrice = $('.product_per_milliliter_price').text();
+            var mlp = parseFloat(milliliterPrice);
+            var productPerMilliliterPrice = selectedMilliliter ? selectedMilliliter * mlp : 0;
+
+            console.log(productPerMilliliterPrice);
 
             var quanPrice = (quantity * price);
-            var totalPrice = (quantity * price) + productPerLiterPrice;
+            var totalPrice = (quantity * price) + productPerLiterPrice + productPerMilliliterPrice;
             var lPrice = productPerLiterPrice;
+            var mlPrice = productPerMilliliterPrice;
             $('.total-price').text("{{ $general->cur_sym }}" + totalPrice.toFixed(2));
             $('.quan-price').text("{{ $general->cur_sym }}" + quanPrice.toFixed(2));
             $('.l-price').text("{{ $general->cur_sym }}" + lPrice.toFixed(2));
+            $('.ml-price').text("{{ $general->cur_sym }}" + mlPrice.toFixed(2));
         }
+
+        document.getElementById('lit-but').addEventListener('change', function () {
+            var forLitersDiv = document.querySelector('.forLiters');
+            var forMilDiv = document.querySelector('.mil-box');
+            var forLitDisplay = document.querySelector('.lit-display');
+
+            if (this.checked) {
+                forLitersDiv.classList.remove('d-none');
+                forMilDiv.classList.add('d-none');
+                forLitDisplay.classList.remove('d-none');
+                var milliliterSelect = document.querySelector('select[name="product_price_per_milliliter"]');
+                 if (milliliterSelect) {
+                  milliliterSelect.value = ''; // Reset milliliters selection if it exists
+                  }
+
+                TotalPrice(); // Recalculate the price with reset milliliter value
+                setTimeout(function() {
+                    forLitersDiv.classList.add('show');
+                }, 10);
+            } else {
+                forLitersDiv.classList.remove('show');
+                forMilDiv.classList.remove('d-none');
+                forLitDisplay.classList.add('d-none');
+                setTimeout(function() {
+                    forLitersDiv.classList.add('d-none');
+                }, 500);
+            }
+        });
+
+        document.getElementById('mil-but').addEventListener('change', function () {
+            var forMillilitersDiv = document.querySelector('.forMilliliters');
+            var forLitDiv = document.querySelector('.lit-box');
+            var forMilDisplay = document.querySelector('.mil-display');
+
+
+            if (this.checked) {
+                forMillilitersDiv.classList.remove('d-none');
+                forLitDiv.classList.add('d-none');
+                forMilDisplay.classList.remove('d-none');
+                var literSelect = document.querySelector('select[name="product_price_per_liter"]');
+                 if (literSelect) {
+                  literSelect.value = '';
+              }
+                TotalPrice(); // Recalculate the price with reset liter value
+                setTimeout(function() {
+                    forMillilitersDiv.classList.add('show');
+                }, 10);
+            } else {
+                forMillilitersDiv.classList.remove('show');
+                forLitDiv.classList.remove('d-none');
+                forMilDisplay.classList.add('d-none');
+                setTimeout(function() {
+                    forMillilitersDiv.classList.add('d-none');
+                }, 500);
+            }
+        });
+
     })(jQuery);
 </script>
 @endpush
-
-

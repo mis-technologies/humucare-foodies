@@ -17,9 +17,9 @@ $policyPages = getContent('policy_pages.element', false, null, true);
         style="
          height: 50px;
          padding: 10px;
-         background-color: rgb(225, 225, 225);
+         background-color: #F5c10C;
          border-radius: 20px;"
-        class="{{ menuActive('track-order') }}">
+        class="text-white">
             @lang('Call For Party Services')  <i class="fa fa-phone"></i>
         </a>
      </div>
