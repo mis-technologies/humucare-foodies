@@ -19,22 +19,108 @@
     <link rel="stylesheet" href="{{ asset($activeTemplateTrue.'css/lightbox.min.css') }}">
     <link rel="stylesheet" href="{{ asset($activeTemplateTrue.'css/owl.min.css') }}">
     <link rel="stylesheet" href="{{ asset($activeTemplateTrue.'css/main.css') }}">
-    <link rel="shortcut icon" href="{{ getImage(imagePath()['logoIcon']['path'] . '/favicon.png', '?' . time()) }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ getImage(imagePath()['logoIcon']['path'] . '/favicon.png', '?' . time()) }}"
+        type="image/x-icon">
     <link rel="stylesheet" href="{{ asset($activeTemplateTrue . 'css/color.php') }}?color={{ $general->base_color }}">
 
     @stack('style-lib')
 
     @stack('style')
 
+    <style>
+
+        .forMilliliters {
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: opacity 0.5s ease, max-height 0.5s ease;
+        }
+
+        .forMilliliters.show {
+            opacity: 1;
+            max-height: 200px;
+        }
+
+        .forLiters {
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: opacity 0.5s ease, max-height 0.5s ease;
+        }
+
+        .forLiters.show {
+            opacity: 1;
+            max-height: 200px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked+.slider {
+            background-color: #F3E521;
+        }
+
+        input:focus+.slider {
+            box-shadow: 0 0 1px #F3E521;
+        }
+
+        input:checked+.slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+    </style>
 </head>
 
 <body class="overflow-hidden">
 
     <div class="preloader">
         <div class="loader-bg">
-          <div class="loader-inner">
-              <span></span>
-          </div>
+            <div class="loader-inner">
+                <span></span>
+            </div>
         </div>
     </div>
 
@@ -100,8 +186,10 @@
                 $('.category-link .cate-icon').each(function(i, obj) {
                     $(this).children(":first").attr('href','javascript: void(0)');
                 });
-            } 
+            }
         })(jQuery);
+
+
     </script>
 </body>
 

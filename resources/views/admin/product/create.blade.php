@@ -14,7 +14,7 @@
                             <label class="form-control-label font-weight-bold">@lang('Name')
                                 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="name" class="form-control"  value="{{ old('name') }}" required/>
+                            <input type="text" name="name" class="form-control" value="{{ old('name') }}" required />
                         </div>
                         <div class="form-group col-md-6">
                             <label class="form-control-label font-weight-bold">@lang('Brands')
@@ -36,7 +36,8 @@
                             <select class="form-control" name="category_id" id="category">
                                 <option value="" selected disabled>@lang('Select one')</option>
                                 @foreach ($allCategory as $category)
-                                <option data-subcategories="{{ $category->subcategories }}" value="{{ $category->id }}" @if (old('category_id')==$category->id)
+                                <option data-subcategories="{{ $category->subcategories }}" value="{{ $category->id }}"
+                                    @if (old('category_id')==$category->id)
                                     selected="selected" @endif>
                                     {{ __($category->name) }}</option>
                                 @endforeach
@@ -60,7 +61,8 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text">{{ $general->cur_sym }}</span>
                                     </div>
-                                    <input type="number" step="any" class="form-control" name="price" value="{{ old('price') }}" min="0" required>
+                                    <input type="number" step="any" class="form-control" name="price"
+                                        value="{{ old('price') }}" min="0" required>
                                 </div>
                             </div>
                         </div>
@@ -69,12 +71,13 @@
                                 <label class="form-control-label font-weight-bold">@lang('Product SKU')
                                     <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" name="product_sku" class="form-control" value="{{ old('product_sku') }}" required/>
+                                <input type="text" name="product_sku" class="form-control"
+                                    value="{{ old('product_sku') }}" required />
                             </div>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-6">
+                        {{-- <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-control-label font-weight-bold">@lang('Product Liters')
                                     <span class="text-danger">(Optional)</span>
@@ -83,11 +86,22 @@
                                 <select name="liter" class="form-control" id="">
 
                                     <option selected disabled>Choose Liter rate to sell at.</option>
-                                    @for ($i = 1; $i <= 1; $i++)
-                                        <option value="{{$i}}">{{ $i}} {{Str::plural('Liter', $i)}}</option>
-                                    @endfor
+                                    @for ($i = 1; $i <= 1; $i++) <option value="{{$i}}">{{ $i}} {{Str::plural('Liter',
+                                        $i)}}</option>
+                                        @endfor
 
                                 </select>
+                            </div>
+                        </div> --}}
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="form-control-label font-weight-bold">
+                                    <span class="text-danger">(You have option below to determine the rate at which you
+                                        can sell this product in milliliters or in liters. if you decide to sell in both
+                                        gradiations you can do so below. The buyers will see how much you sell per a
+                                        liter or per milliliters.)</span>
+                                </label>
+
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -99,7 +113,23 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text">{{ $general->cur_sym }}</span>
                                     </div>
-                                    <input type="number" step="any" class="form-control" name="price_per_liter" value="{{ old('price_per_liter') }}" min="0">
+                                    <input type="number" step="any" class="form-control" name="price_per_liter"
+                                        value="{{ old('price_per_liter') }}" min="0">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-control-label font-weight-bold">@lang('Price Per Product
+                                    MilliLiters')
+                                    <span class="text-danger">(Optional)</span>
+                                </label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">{{ $general->cur_sym }}</span>
+                                    </div>
+                                    <input type="number" step="any" class="form-control" name="price_per_milliliter"
+                                        value="{{ old('price_per_milliliter') }}" min="0">
                                 </div>
                             </div>
                         </div>
@@ -110,14 +140,15 @@
                                 <label class="form-control-label font-weight-bold">@lang('Stock Quantity')
                                     <span class="text-danger">*</span>
                                 </label>
-                                <input type="number" name="quantity" class="form-control" value="{{ old('quantity') }}" required/>
+                                <input type="number" name="quantity" class="form-control" value="{{ old('quantity') }}"
+                                    required />
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-control-label font-weight-bold">@lang('Discount')</label>
                                 <div class="input-group">
-                                    <input type="number" step="any" name="discount" class="form-control" value="0"/>
+                                    <input type="number" step="any" name="discount" class="form-control" value="0" />
                                     <div class="input-group-append">
                                         <select name="discount_type" class="input-group-text">
                                             <option value="1">{{ __($general->cur_sym) }}</option>
@@ -192,13 +223,15 @@
                         <label class="form-control-label font-weight-bold">@lang('Summary')
                             <span class="text-danger">*</span>
                         </label>
-                        <textarea name="summary" class="form-control" cols="2" rows="2" required>{{ old('summary') }}</textarea>
+                        <textarea name="summary" class="form-control" cols="2" rows="2"
+                            required>{{ old('summary') }}</textarea>
                     </div>
                     <div class="form-group">
                         <label class="form-control-label font-weight-bold">@lang('Description')
                             <span class="text-danger">*</span>
                         </label>
-                        <textarea rows="5" class="form-control border-radius-5 nicEdit" name="description">{{ old('description') }}</textarea>
+                        <textarea rows="5" class="form-control border-radius-5 nicEdit"
+                            name="description">{{ old('description') }}</textarea>
                     </div>
                 </div>
             </div>
@@ -230,35 +263,45 @@
                                 <div class="payment-method-header">
                                     <div class="thumb">
                                         <div class="avatar-preview">
-                                            <div class="profilePicPreview" style="background-image: url('{{ getImage('/', imagePath()['product']['thumb']['size']) }}')"></div>
+                                            <div class="profilePicPreview"
+                                                style="background-image: url('{{ getImage('/', imagePath()['product']['thumb']['size']) }}')">
+                                            </div>
                                         </div>
                                         <div class="avatar-edit">
-                                            <input type="file" name="image" class="profilePicUpload" id="image" accept=".png, .jpg, .jpeg"/>
+                                            <input type="file" name="image" class="profilePicUpload" id="image"
+                                                accept=".png, .jpg, .jpeg" />
                                             <label for="image" class="bg--primary"><i class="la la-pencil"></i></label>
                                         </div>
                                     </div>
                                 </div>
                                 <small class="mt-2 text-facebook">@lang('Supported files'):
-                                    <b>@lang('jpeg'), @lang('jpg').</b> @lang('Image will be resized into') {{  imagePath()['product']['thumb']['size'] }}@lang('px')
+                                    <b>@lang('jpeg'), @lang('jpg').</b> @lang('Image will be resized into') {{
+                                    imagePath()['product']['thumb']['size'] }}@lang('px')
                                 </small>
                             </div>
                         </div>
                         <div class="col-xl-9">
                             <div class="row">
                                 <div class="form-group col-sm-6">
-                                    <label class="form-control-label font-weight-bold">@lang('Display Hot Deals')</label>
-                                    <input type="checkbox" data-width="100%" data-onstyle="-success" data-offstyle="-danger"
-                                        data-toggle="toggle" data-on="@lang('Yes')" data-off="@lang('No')" name="hot_deals">
+                                    <label class="form-control-label font-weight-bold">@lang('Display Hot
+                                        Deals')</label>
+                                    <input type="checkbox" data-width="100%" data-onstyle="-success"
+                                        data-offstyle="-danger" data-toggle="toggle" data-on="@lang('Yes')"
+                                        data-off="@lang('No')" name="hot_deals">
                                 </div>
                                 <div class="form-group col-sm-6">
-                                    <label class="form-control-label font-weight-bold">@lang('Display Featured Product')</label>
-                                    <input type="checkbox" data-width="100%" data-onstyle="-success" data-offstyle="-danger"
-                                        data-toggle="toggle" data-on="@lang('Yes')" data-off="@lang('No')" name="featured_product">
+                                    <label class="form-control-label font-weight-bold">@lang('Display Featured
+                                        Product')</label>
+                                    <input type="checkbox" data-width="100%" data-onstyle="-success"
+                                        data-offstyle="-danger" data-toggle="toggle" data-on="@lang('Yes')"
+                                        data-off="@lang('No')" name="featured_product">
                                 </div>
                                 <div class="form-group col-sm-6">
-                                    <label class="form-control-label font-weight-bold">@lang('Display Today Deals')</label>
-                                    <input type="checkbox" data-width="100%" data-onstyle="-success" data-offstyle="-danger"
-                                        data-toggle="toggle" data-on="@lang('Yes')" data-off="@lang('No')" name="today_deals">
+                                    <label class="form-control-label font-weight-bold">@lang('Display Today
+                                        Deals')</label>
+                                    <input type="checkbox" data-width="100%" data-onstyle="-success"
+                                        data-offstyle="-danger" data-toggle="toggle" data-on="@lang('Yes')"
+                                        data-off="@lang('No')" name="today_deals">
                                 </div>
                             </div>
                         </div>

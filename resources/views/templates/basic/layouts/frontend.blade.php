@@ -2,6 +2,8 @@
 @section('app')
 @include($activeTemplate.'partials.header')
 
+@include('sweetalert::alert')
+
 @yield('content')
 
 @include($activeTemplate.'partials.footer')
@@ -65,7 +67,9 @@
             var product_id = $(this).data('product_id');
             var quantity = $('.productQuantity').val();
             var liter = $('.productLiter').val();
+            var milliliter = $('.productMilliliter').val();
             var pricePerLiter = parseInt($('.price_per_liter').val());
+            var pricePerMilliliter = parseInt($('.price_per_milliliter').val());
             if(quantity == undefined){
                 quantity = 1;
             }
@@ -73,13 +77,42 @@
                 liter = 0;
                 pricePerLiter = 0;
             }
+            if(milliliter == undefined){
+                milliliter = 0;
+                pricePerMilliliter = 0;
+            }
             console.log(pricePerLiter);
 
             $.ajax({
                 headers: {"X-CSRF-TOKEN": "{{ csrf_token() }}",},
                 method: "POST",
                 url: "{{ route('add-to-cart') }}",
-                data: {product_id:product_id,quantity:quantity, liter:liter, pricePerLiter:pricePerLiter},
+                data: {product_id:product_id,quantity:quantity,liter:liter,milliliter:milliliter,pricePerLiter:pricePerLiter,pricePerMilliliter:pricePerMilliliter},
+                success: function (response) {
+                    if(response.success) {
+                        notify('success', response.success);
+                        getCartCount();
+                    }else{
+                        notify('error', response.error);
+                    }
+                }
+            });
+        })
+        // add tocart for related products to avoid sending info of the referenced products to the database.
+        $(document).on('click','.add-to-cart-related',function (e){
+            e.preventDefault();
+            var product_id = $(this).data('product_id');
+            var quantity = $('.productQuantity').val();
+
+            if(quantity == undefined){
+                quantity = 1;
+            }
+
+            $.ajax({
+                headers: {"X-CSRF-TOKEN": "{{ csrf_token() }}",},
+                method: "POST",
+                url: "{{ route('add-to-cart') }}",
+                data: {product_id:product_id,quantity:quantity},
                 success: function (response) {
                     if(response.success) {
                         notify('success', response.success);

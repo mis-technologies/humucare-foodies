@@ -77,20 +77,12 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <div class="form-group">
-                                <label class="form-control-label font-weight-bold">@lang('Product Liters')
-                                    <span class="text-danger">(Optional)</span>
+                                <label class="form-control-label font-weight-bold">
+                                    <span class="text-danger">(You can edit the curret price per liter or milli-liter if needed.)</span>
                                 </label>
 
-                                <select name="liter" class="form-control" id="">
-
-                                    <option selected value="{{$ppl->liter ?? null}}">{{$ppl->liter ?? null}} </option>
-                                    @for ($i = 1; $i <= 1; $i++) <option value="{{$i}}">{{ $i}} {{Str::plural('Liter',
-                                        $i)}}</option>
-                                        @endfor
-
-                                </select>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -103,6 +95,19 @@
                                         <span class="input-group-text">{{ $general->cur_sym }}</span>
                                     </div>
                                     <input type="number" step="any" class="form-control" name="price_per_liter" value="{{$ppl->price ?? null}}" min="0">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-control-label font-weight-bold">@lang('Price Per Product MilliLiters')
+                                    <span class="text-danger">(Optional)</span>
+                                </label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">{{ $general->cur_sym }}</span>
+                                    </div>
+                                    <input type="number" step="any" class="form-control" name="price_per_milliliter" value="{{$ppml->price ?? null}}" min="0">
                                 </div>
                             </div>
                         </div>

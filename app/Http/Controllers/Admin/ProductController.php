@@ -9,6 +9,7 @@ use App\Models\GeneralSetting;
 use App\Models\Product;
 use App\Models\ProductGallery;
 use App\Models\ProductPricePerLiter;
+use App\Models\ProductPricePerMilliliter;
 use App\Models\Review;
 use App\Rules\FileTypeValidate;
 use Illuminate\Http\Request;
@@ -162,11 +163,22 @@ class ProductController extends Controller {
             $files->save();
         }
 
-        if ($request->hasAny('price_per_liter') && $request->hasAny('liter')) {
+
+        if ($request->hasAny('price_per_liter')) {
 
             $product_price_per_liter = new ProductPricePerLiter();
             $product_price_per_liter->price = $request->price_per_liter;
-            $product_price_per_liter->liter = $request->liter;
+            $product_price_per_liter->liter = 1;
+            $product_price_per_liter->product_id = $product->id;
+            $product_price_per_liter->save();
+
+        }
+
+        if ($request->hasAny('price_per_milliliter')) {
+
+            $product_price_per_liter = new ProductPricePerMilliliter();
+            $product_price_per_liter->price = $request->price_per_milliliter;
+            $product_price_per_liter->milliliter = 1;
             $product_price_per_liter->product_id = $product->id;
             $product_price_per_liter->save();
 
@@ -185,7 +197,8 @@ class ProductController extends Controller {
         ])->orderBy('name')->get();
         $brands = Brand::where('status', 1)->orderBy('name')->get();
         $ppl = ProductPricePerLiter::whereProductId($id)->first();
-        return view('admin.product.edit', compact('ppl','pageTitle', 'product', 'allCategory', 'brands'));
+        $ppml = ProductPricePerMilliliter::whereProductId($id)->first();
+        return view('admin.product.edit', compact('ppml','ppl','pageTitle', 'product', 'allCategory', 'brands'));
     }
 
     public function update(Request $request, $id) {
@@ -314,12 +327,21 @@ class ProductController extends Controller {
         $product->image            = $filename;
         $product->save();
 
-        if ($request->price_per_liter != null && $request->liter != null) {
+        // for the liter price
+        if ($request->price_per_liter != null) {
 
             $product_price_per_liter =ProductPricePerLiter::whereProductId($id)->first();
             $product_price_per_liter->price = $request->price_per_liter;
-            $product_price_per_liter->liter = $request->liter;
-            // $product_price_per_liter->product_id = $product->id;
+            $product_price_per_liter->liter = 1;
+            $product_price_per_liter->save();
+
+        }
+        // for the milliliter price
+        if ($request->price_per_milliliter != null) {
+
+            $product_price_per_liter =ProductPricePerMilliliter::whereProductId($id)->first();
+            $product_price_per_liter->price = $request->price_per_milliliter;
+            $product_price_per_liter->milliliter = 1;
             $product_price_per_liter->save();
 
         }

@@ -13,7 +13,9 @@
                     <th>@lang('Unit Price')</th>
                     <th>@lang('Quantity')</th>
                     <th>@lang('Liter')</th>
-                    <th>@lang('Price Per Liter')</th>
+                    <th>@lang('Price Per L')</th>
+                    <th>@lang('Milliliter')</th>
+                    <th>@lang('Price Per Ml')</th>
                     <th>@lang('Subtotal')</th>
                     <th>@lang('Remove')</th>
                 </tr>
@@ -32,8 +34,9 @@
                 $price = showDiscountPrice($cart->price,$cart->discount,$cart->discount_type);
                 }
 
-                    $ppl = $cart->liter * $cart->pricePerLiter;
-                    $subTotal = $price * $cart->quantity + ($ppl);
+                    $ppl = $cart->liter * $cart->price_per_liter;
+                    $ppml = $cart->milliliter * $cart->price_per_milliliter;
+                    $subTotal = $price * $cart->quantity + ($ppl) + ($ppml);
 
 
                 @endphp
@@ -76,14 +79,28 @@
                             {{ $cart->liter }}
                         </span>
                     </td>
-                    {{-- @php
-                        dd($cart);
-                    @endphp --}}
+
                     <td data-label="@lang('Price Per Liter')">
                         <span class="pppp">
                             {{ $general->cur_sym }}
                             <span class="ppl">
-                                {{ getAmount($cart->pricePerLiter) }}
+                                {{ getAmount($cart->price_per_liter) }}
+                            </span>
+                        </span>
+                    </td>
+                    <td data-label="@lang('Ml')">
+                        <span class="milliliter">
+                            {{ $cart->milliliter }}
+                        </span>
+                    </td>
+                    {{-- @php
+                        dd($cart->all());
+                    @endphp --}}
+                    <td data-label="@lang('Price Per ml')">
+                        <span class="pppp">
+                            {{ $general->cur_sym }}
+                            <span class="ppml">
+                                {{ getAmount($cart->price_per_milliliter) }}
                             </span>
                         </span>
                     </td>
@@ -201,10 +218,16 @@
             let productPrice = currentRow.find('.price').text();
             let splitPrice = productPrice.split("{{ $general->cur_sym }}");
             let price = parseFloat(splitPrice[1]);
+
             let ppLiter = currentRow.find('.ppl').text();
             let liter = currentRow.find('.liter').text();
             let ppl = ppLiter*liter;
-            let totalPrice = quantity * price + ppl;
+
+            let ppMilliliter = currentRow.find('.ppml').text();
+            let milliliter = currentRow.find('.milliliter').text();
+            let ppml = ppMilliliter*milliliter;
+
+            let totalPrice = quantity * price + (ppl) + (ppml);
             currentRow.find('.subtotal').text("{{ $general->cur_sym }}"+totalPrice.toFixed(2));
 
             $('.coupon-show').addClass('d-none')

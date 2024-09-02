@@ -425,6 +425,7 @@ Route::get('/all/categories', 'SiteController@allCategory')->name('all.category'
 Route::get('/all/brands', 'SiteController@allBrands')->name('all.brands');
 
 Route::get('/all/products', 'SiteController@products')->name('products');
+Route::get('/home-service/view/[hs]','SiteController@homeService')->name('home-service');
 
 Route::get('/hot_deals/products', 'SiteController@products')->name('hot_deals.products');
 
