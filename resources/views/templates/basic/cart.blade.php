@@ -154,6 +154,18 @@
                     <li>
                         <a href="{{ route('user.checkout') }}" class="cmn--btn w-100">@lang('Proceed to Checkout')</a>
                     </li>
+                    <hr>
+                    <p> Note: Apply for home service discounted charges if you have ordered 15 packs of products of 500ml each for a discounted fee of. <em>{{ $general->cur_sym }}220</em></p>
+                    <hr>
+                    <li>
+                        <a href="{{ route('user.mil.checkout') }}" class="cmn--btn w-100">@lang('Home service Checkout (mil)')</a>
+                    </li>
+                    <hr>
+                    <p> Note: Apply for home service discounted charges if you have ordered 15 packs of products of 1l each for a discounted fee of. <em>{{ $general->cur_sym }}350</em></p>
+                    <hr>
+                    <li>
+                        <a href="{{ route('user.l.checkout') }}" class="cmn--btn w-100">@lang('Home service Checkout (l)')</a>
+                    </li>
                 </ul>
             </div>
         </div>

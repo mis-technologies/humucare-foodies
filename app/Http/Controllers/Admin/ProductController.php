@@ -197,6 +197,8 @@ class ProductController extends Controller {
         ])->orderBy('name')->get();
         $brands = Brand::where('status', 1)->orderBy('name')->get();
         $ppl = ProductPricePerLiter::whereProductId($id)->first();
+
+        // dd($ppl);
         $ppml = ProductPricePerMilliliter::whereProductId($id)->first();
         return view('admin.product.edit', compact('ppml','ppl','pageTitle', 'product', 'allCategory', 'brands'));
     }
@@ -330,19 +332,24 @@ class ProductController extends Controller {
         // for the liter price
         if ($request->price_per_liter != null) {
 
-            $product_price_per_liter =ProductPricePerLiter::whereProductId($id)->first();
-            $product_price_per_liter->price = $request->price_per_liter;
-            $product_price_per_liter->liter = 1;
-            $product_price_per_liter->save();
+            ProductPricePerLiter::updateOrCreate(['product_id'=> $id],[
+
+                'price'=>$request->price_per_liter,
+                'product_id'=>$id,
+                'liter'=>1,
+            ]);
 
         }
         // for the milliliter price
         if ($request->price_per_milliliter != null) {
 
-            $product_price_per_liter =ProductPricePerMilliliter::whereProductId($id)->first();
-            $product_price_per_liter->price = $request->price_per_milliliter;
-            $product_price_per_liter->milliliter = 1;
-            $product_price_per_liter->save();
+
+            ProductPricePerMilliliter::updateOrCreate(['product_id'=>$id], [
+
+                'price'=> $request->price_per_milliliter,
+                'product_id'=>$id,
+                'milliliter'=>1,
+            ]);
 
         }
 

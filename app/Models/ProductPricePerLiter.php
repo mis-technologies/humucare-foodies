@@ -10,6 +10,13 @@ class ProductPricePerLiter extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'price',
+        'liter',
+        'product_id'
+
+    ];
+
     /**
      * Get the product that owns the ProductPricePerLiter
      *

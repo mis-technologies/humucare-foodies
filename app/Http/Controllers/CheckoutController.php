@@ -10,6 +10,7 @@ use App\Models\OrderDetail;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use Illuminate\Http\Request;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class CheckoutController extends Controller {
     public function __construct() {
@@ -19,6 +20,8 @@ class CheckoutController extends Controller {
     public function checkout(Request $request) {
         $pageTitle = 'Checkout';
         $total     = session()->get('total');
+
+
         $user_id   = auth()->user()->id;
 
         if ($total) {
@@ -39,6 +42,88 @@ class CheckoutController extends Controller {
         return view($this->activeTemplate . 'checkout', compact('pageTitle', 'data', 'countries', 'shippingMethod'));
 
     }
+
+    public function milCheckout(Request $request) {
+        $pageTitle = 'Checkout';
+        $total     = session()->get('total');
+        $user_id   = auth()->user()->id;
+
+        // Check if the user has 15 or more items with 500ml in the cart
+        $hasManyItemsWith500ml = $this->checkCartItemsForUser($user_id);
+
+        if ($hasManyItemsWith500ml || $total) {
+            $data['subtotal'] = 220;
+            $data['discount'] = showAmount(0.00);
+            $data['total']    = 220;
+        }else {
+
+            Alert::info('info', 'Your cart items doesnt meet the home service requirement.');
+            return back();
+            // $subtotal = $this->cartSubTotal($user_id);
+            // if ($subtotal == 0) {
+            //     abort(404);
+            // }
+            // $data['subtotal'] = $subtotal;
+            // $data['discount'] = showAmount(0.00);
+            // $data['total']    = $subtotal;
+        }
+
+
+
+        $countries      = json_decode(file_get_contents(resource_path('views/partials/country.json')));
+        $shippingMethod = ShippingMethod::where('status', 1)->get();
+
+        return view($this->activeTemplate . 'checkout', compact('pageTitle', 'data', 'countries', 'shippingMethod'));
+    }
+    private function checkCartItemsForUser($userId)
+    {
+        $cartItemsCount = Cart::where('user_id', $userId)
+                                ->where('milliliter', 500)
+                                ->count();
+
+        return $cartItemsCount >= 15;
+    }
+
+    public function lCheckout(Request $request) {
+        $pageTitle = 'Checkout';
+        $total     = session()->get('total');
+        $user_id   = auth()->user()->id;
+
+        $hasManyItemsWith1l = $this->checkCartItemsForUserLiter($user_id);
+
+        if ($hasManyItemsWith1l || $total) {
+            $data['subtotal'] = 350;
+            $data['discount'] = showAmount(0.00);
+            $data['total']    = 350;
+        }else {
+
+            Alert::info('info', 'Your cart items doesnt meet the home service requirement.');
+            return back();
+            // $subtotal = $this->cartSubTotal($user_id);
+            // if ($subtotal == 0) {
+            //     abort(404);
+            // }
+            // $data['subtotal'] = $subtotal;
+            // $data['discount'] = showAmount(0.00);
+            // $data['total']    = $subtotal;
+        }
+
+
+
+        $countries      = json_decode(file_get_contents(resource_path('views/partials/country.json')));
+        $shippingMethod = ShippingMethod::where('status', 1)->get();
+
+        return view($this->activeTemplate . 'checkout', compact('pageTitle', 'data', 'countries', 'shippingMethod'));
+    }
+    private function checkCartItemsForUserLiter($userId)
+    {
+        $cartItemsCount = Cart::where('user_id', $userId)
+                                ->where('liter', 1)
+                                ->count();
+
+        return $cartItemsCount >= 15;
+    }
+
 
 
     public function shippingMethod(Request $request) {
@@ -168,9 +253,9 @@ class CheckoutController extends Controller {
     protected function cartSubTotal($user_id) {
 
         $carts = Cart::where('user_id', $user_id)->with('product')->get();
-    
+
         $total = [0];
-    
+
         foreach ($carts as $cart) {
             $sumPrice = 0;
             $product  = Product::active()->where('id', $cart->product->id)->first();
@@ -179,9 +264,9 @@ class CheckoutController extends Controller {
             $sumPrice = $sumPrice + ($price * $cart->quantity);
             $total[]  = $sumPrice;
         }
-    
+
         $subtotal = array_sum($total);
-        return $subtotal; 
+        return $subtotal;
     }
 
 }

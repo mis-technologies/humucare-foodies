@@ -43,6 +43,7 @@ class User extends Authenticatable
     ];
 
 
+    
 
 
     public function login_logs()
