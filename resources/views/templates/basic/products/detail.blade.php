@@ -46,6 +46,7 @@
                         @php
                         $price = productPrice($product);
                         $features = json_decode($product->features);
+                        // dd($product);
                         @endphp
                         <div class="repeat--item border-0">
                             <ul class="lists">
@@ -101,11 +102,13 @@
                                 <li>
                                     <span class="name">@lang('Total Price')</span>
                                     <h5 class="info m-0 total-price">
-                                        @if ($product->discount != 0)
+                                        {{-- @if ($product->discount != 0)
                                         {{ $general->cur_sym }}{{ showAmount($price) }}
                                         @else
                                         {{ $general->cur_sym }}{{ showAmount($product->price) }}
-                                        @endif
+                                        @endif --}}
+                                        {{ $general->cur_sym }}{{ showAmount($price) }}
+
                                     </h5>
                                 </li>
                             </ul>

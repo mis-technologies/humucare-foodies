@@ -387,6 +387,8 @@ Route::name('user.')->prefix('user')->group(function () {
             Route::any('deposit/history', 'UserController@depositHistory')->name('deposit.history');
 
             Route::get('/checkout', 'CheckoutController@checkout')->name('checkout');
+            Route::get('/milCheckout', 'CheckoutController@milCheckout')->name('mil.checkout');
+            Route::get('/lCheckout', 'CheckoutController@lCheckout')->name('l.checkout');
             Route::get('/shipping/method', 'CheckoutController@shippingMethod')->name('shipping.method');
             Route::post('/checkout/order', 'CheckoutController@order')->name('checkout.order');
 
