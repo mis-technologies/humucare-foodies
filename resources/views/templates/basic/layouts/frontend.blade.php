@@ -66,28 +66,25 @@
             e.preventDefault();
             var product_id = $(this).data('product_id');
             var quantity = $('.productQuantity').val();
-            var liter = $('.productLiter').val();
-            var milliliter = $('.productMilliliter').val();
-            var pricePerLiter = parseInt($('.price_per_liter').val());
-            var pricePerMilliliter = parseInt($('.price_per_milliliter').val());
+
+            var volume = $(this).data('volume');
+            var price = $(this).data('price');
+
             if(quantity == undefined){
                 quantity = 1;
             }
-            if(liter == undefined){
-                liter = 0;
-                pricePerLiter = 0;
+            if(volume == undefined){
+                volume = 0;
             }
-            if(milliliter == undefined){
-                milliliter = 0;
-                pricePerMilliliter = 0;
+            if(price == undefined){
+                price = 0;
             }
-            console.log(pricePerLiter);
 
             $.ajax({
-                headers: {"X-CSRF-TOKEN": "{{ csrf_token() }}",},
+                headers: {"X-CSRF-TOKEN": "{{   csrf_token() }}",},
                 method: "POST",
                 url: "{{ route('add-to-cart') }}",
-                data: {product_id:product_id,quantity:quantity,liter:liter,milliliter:milliliter,pricePerLiter:pricePerLiter,pricePerMilliliter:pricePerMilliliter},
+                data: {product_id:product_id,quantity:quantity,volume:volume,price:price},
                 success: function (response) {
                     if(response.success) {
                         notify('success', response.success);
@@ -104,9 +101,7 @@
             var product_id = $(this).data('product_id');
             var quantity = $('.productQuantity').val();
 
-            if(quantity == undefined){
-                quantity = 1;
-            }
+            quantity = 1;
 
             $.ajax({
                 headers: {"X-CSRF-TOKEN": "{{ csrf_token() }}",},
@@ -187,6 +182,34 @@
                 }
             });
         });
+
+        // home service div
+        $(document).ready(function() {
+            // Function to check total price and show/hide the home service div
+            function checkTotalPrice() {
+                let totalPriceText = $('.total-price').text();
+                let splitPrice = totalPriceText.split("{{ $general->cur_sym }}");
+                let totalPrice = parseFloat(splitPrice[1]);
+
+                $('input[name="total"]').val(totalPrice);
+                
+                if (totalPrice >= 220) {
+
+                    $('.home-service').removeClass('d-none'); // Make home service div visible
+
+                    notify('success', 'You are eligible for Home Service discount, Use the home service discount button to checkout');
+                } else {
+                    $('.home-service').addClass('d-none'); // Hide home service div if not 220
+                }
+            }
+
+            // Check when the page is loaded
+            checkTotalPrice();
+
+            // Monitor changes in total price by setting a timer to check periodically
+            setInterval(checkTotalPrice, 10000); // Check every second (you can adjust the interval if needed)
+        });
+
 
     })(jQuery);
 </script>

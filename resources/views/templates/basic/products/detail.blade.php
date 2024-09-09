@@ -102,140 +102,38 @@
                                 <li>
                                     <span class="name">@lang('Total Price')</span>
                                     <h5 class="info m-0 total-price">
-                                        {{-- @if ($product->discount != 0)
+                                        @if ($product->discount != 0)
                                         {{ $general->cur_sym }}{{ showAmount($price) }}
                                         @else
                                         {{ $general->cur_sym }}{{ showAmount($product->price) }}
-                                        @endif --}}
-                                        {{ $general->cur_sym }}{{ showAmount($price) }}
+                                        @endif
 
                                     </h5>
                                 </li>
                             </ul>
                         </div>
 
+
+
                         <div class="repeat--item">
 
                             <div class="d-flex row">
 
-                                <div class="col-6 lit-box">
-                                    <h6 class="m-2">In liters </h6>
-                                    <label class="switch">
-                                        <input id="lit-but" type="checkbox">
-                                        <span class="slider round"></span>
-                                    </label>
-                                </div>
+                                <div class="col-12 lit-box">
+                                    @foreach ($price_range as $p)
 
-                                <div class="col-6 mil-box">
-                                    <h6 class="m-2">In Milliliters </h6>
-                                    <label class="switch">
-                                        <input id="mil-but" type="checkbox">
-                                        <span class="slider round"></span>
-                                    </label>
+
+
+                                    <a href="#0" class="cmn--btn cmn--btnn m-1 price-option" data-volume="{{$p->volume}}" data-price="{{$p->price}}">
+                                        <em class="ml-1">{{$p->volume}} milli-liters at </em> <em>,
+                                            {{$general->cur_sym}}{{$p->price}}</em>
+
+
+                                    </a>
+                                    @endforeach
                                 </div>
                             </div>
-
                         </div>
-                        @if ($product_price_per_liter != null)
-
-                        <div class="d-none forLiters repeat--item">
-                            <div class="">
-
-                                <div class="row">
-
-                                    <div class="col-2 mt-1">
-
-                                        <span class="name">@lang('Liters'):</span>
-
-                                    </div>
-                                    <div class="col-6 d-flex">
-
-
-
-                                        <select style="border-radius:20px" name="product_price_per_liter"
-                                            class="form-control productLiter" id="">
-
-                                            <option selected disabled>Choose in liters </option>
-
-                                            @for ($i = $product_price_per_liter->liter; $i <= 20;
-                                                $i+=$product_price_per_liter->liter)
-
-                                                <option value="{{$i}}">{{$i}} {{Str::plural('Liter', $i)}}</option>
-
-                                                @endfor
-
-                                        </select>
-
-                                    </div>
-
-                                    <div class="col-4 mt-1">
-                                        <p
-                                            style="border: solid; border-width: 1px; border-radius: 10px; border-color: blue; color: blue; padding: 10px; ">
-                                            {{$general->cur_sym}} <span
-                                                class="product_per_price">{{$product_price_per_liter->price ?
-                                                $product_price_per_liter->price : 0 }}</span> /
-                                            {{$product_price_per_liter->liter}} {{Str::plural('Liter',
-                                            $product_price_per_liter->liter)}}
-                                        </p>
-                                    </div>
-
-                                    <input type="hidden" value="{{$product_price_per_liter->price}}"
-                                        class="price_per_liter" id="">
-
-                                </div>
-
-                            </div>
-                        </div>
-                        @endif
-
-                        @if ($product_price_per_milliliter != null)
-                        <div class="d-none forMilliliters repeat--item">
-                            <div class="">
-
-                                <div class="row">
-
-                                    <div class="col-2 mt-1">
-
-                                        <span class="name">@lang('Milli-Liters'):</span>
-
-                                    </div>
-                                    <div class="col-6 d-flex">
-
-                                        <select style="border-radius:20px" name="product_price_per_milliliter"
-                                            class="form-control productMilliliter" id="">
-
-                                            <option selected disabled>Choose in Milliliters </option>
-
-                                            @for ($i = $product_price_per_milliliter->milliliter; $i <= 1000;
-                                                $i+=$product_price_per_milliliter?->milliliter)
-
-                                                <option value="{{$i}}">{{$i}} {{Str::plural('Milliliter', $i)}}</option>
-
-                                                @endfor
-
-                                        </select>
-
-                                    </div>
-
-                                    <div class="col-4 mt-1">
-                                        <p
-                                            style="border: solid; border-width: 1px; border-radius: 10px; border-color: blue; color: blue; padding: 10px; ">
-                                            {{$general->cur_sym}} <span
-                                                class="product_per_milliliter_price">{{$product_price_per_milliliter->price ?
-                                                $product_price_per_milliliter->price : 0 }}</span> /
-                                            {{$product_price_per_milliliter->milliliter}} {{Str::plural('Milliliter',
-                                            $product_price_per_milliliter->milliliter)}}
-                                        </p>
-                                    </div>
-
-                                    <input type="hidden" value="{{$product_price_per_milliliter->price}}"
-                                        class="price_per_milliliter" id="">
-
-                                </div>
-
-                            </div>
-                        </div>
-                        @endif
 
                         <div class="repeat--item">
                             <div class="single-add-cart-area">
@@ -255,7 +153,7 @@
                                     (<span class="amount">{{ $product->quantity }}</span>)
                                 </div>
                                 @endif
-                                <a href="#0" class="cmn--btn add-to-cart" data-product_id="{{ $product->id }}">
+                                <a href="#0" data-volume="" data-price="" class="cmn--btn add-to-cart" data-product_id="{{ $product->id }}">
                                     @lang('Add To Cart')
                                 </a>
                             </div>
@@ -568,98 +466,37 @@
             }
         });
 
-        // Listen for changes in the liters dropdown
-        $('select[name="product_price_per_liter"]').on('change', function () {
-            TotalPrice(); // Update total price when liters change
-        });
-        // Listen for changes in the milliliters dropdown
-        $('select[name="product_price_per_milliliter"]').on('change', function () {
-            TotalPrice(); // Update total price when milliliters change
-        });
 
-        function TotalPrice() {
+        // Event listener for the price options
+        $('.lit-box .price-option').on('click', function (e) {
+        e.preventDefault(); // Prevent default link behavior
+
+        var volume = $(this).data('volume');
+        var price = $(this).data('price');
+
+        // Find the 'Add to Cart' button and update its data attributes
+        $('.add-to-cart').data('volume', volume);
+        $('.add-to-cart').data('price', price);
+
+        $('.product-price').text("{{ $general->cur_sym }}" + price);
+
+        TotalPrice(volume, price);
+    });
+
+
+        function TotalPrice(selectedVolume, selectedPrice) {
             var quantity = $('input[name="quantity"]').val();
             var productPrice = $('.product-price').text();
             var splitPrice = productPrice.split("{{ $general->cur_sym }}");
             var price = parseFloat(splitPrice[1]);
 
-            var selectedLiter = $('select[name="product_price_per_liter"]').val();
-            var literPrice = $('.product_per_price').text();
-            var lp = parseFloat(literPrice);
-            var productPerLiterPrice = selectedLiter ? selectedLiter * lp : 0;
-
-            var selectedMilliliter = $('select[name="product_price_per_milliliter"]').val();
-            var milliliterPrice = $('.product_per_milliliter_price').text();
-            var mlp = parseFloat(milliliterPrice);
-            var productPerMilliliterPrice = selectedMilliliter ? selectedMilliliter * mlp : 0;
-
-            console.log(productPerMilliliterPrice);
-
             var quanPrice = (quantity * price);
-            var totalPrice = (quantity * price) + productPerLiterPrice + productPerMilliliterPrice;
-            var lPrice = productPerLiterPrice;
-            var mlPrice = productPerMilliliterPrice;
+            var totalPrice = (quantity * price);
+
             $('.total-price').text("{{ $general->cur_sym }}" + totalPrice.toFixed(2));
             $('.quan-price').text("{{ $general->cur_sym }}" + quanPrice.toFixed(2));
-            $('.l-price').text("{{ $general->cur_sym }}" + lPrice.toFixed(2));
-            $('.ml-price').text("{{ $general->cur_sym }}" + mlPrice.toFixed(2));
+
         }
-
-        document.getElementById('lit-but').addEventListener('change', function () {
-            var forLitersDiv = document.querySelector('.forLiters');
-            var forMilDiv = document.querySelector('.mil-box');
-            var forLitDisplay = document.querySelector('.lit-display');
-
-            if (this.checked) {
-                forLitersDiv.classList.remove('d-none');
-                forMilDiv.classList.add('d-none');
-                forLitDisplay.classList.remove('d-none');
-                var milliliterSelect = document.querySelector('select[name="product_price_per_milliliter"]');
-                 if (milliliterSelect) {
-                  milliliterSelect.value = ''; // Reset milliliters selection if it exists
-                  }
-
-                TotalPrice(); // Recalculate the price with reset milliliter value
-                setTimeout(function() {
-                    forLitersDiv.classList.add('show');
-                }, 10);
-            } else {
-                forLitersDiv.classList.remove('show');
-                forMilDiv.classList.remove('d-none');
-                forLitDisplay.classList.add('d-none');
-                setTimeout(function() {
-                    forLitersDiv.classList.add('d-none');
-                }, 500);
-            }
-        });
-
-        document.getElementById('mil-but').addEventListener('change', function () {
-            var forMillilitersDiv = document.querySelector('.forMilliliters');
-            var forLitDiv = document.querySelector('.lit-box');
-            var forMilDisplay = document.querySelector('.mil-display');
-
-
-            if (this.checked) {
-                forMillilitersDiv.classList.remove('d-none');
-                forLitDiv.classList.add('d-none');
-                forMilDisplay.classList.remove('d-none');
-                var literSelect = document.querySelector('select[name="product_price_per_liter"]');
-                 if (literSelect) {
-                  literSelect.value = '';
-              }
-                TotalPrice(); // Recalculate the price with reset liter value
-                setTimeout(function() {
-                    forMillilitersDiv.classList.add('show');
-                }, 10);
-            } else {
-                forMillilitersDiv.classList.remove('show');
-                forLitDiv.classList.remove('d-none');
-                forMilDisplay.classList.add('d-none');
-                setTimeout(function() {
-                    forMillilitersDiv.classList.add('d-none');
-                }, 500);
-            }
-        });
 
     })(jQuery);
 </script>

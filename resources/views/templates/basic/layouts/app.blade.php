@@ -28,6 +28,30 @@
     @stack('style')
 
     <style>
+        .cmn--btnn {
+            background-color: #000000;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            display: inline-block;
+            text-decoration: none;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Hover effect */
+        .cmn--btnn:hover {
+            background-color: #000000;
+            /* Darker blue on hover */
+            color: #000000;
+            /* Change text color on hover */
+        }
+
+        /* Optional: active/focused state */
+        .cmn--btnn:active,
+        .cmn--btnn:focus {
+            outline: none;
+            box-shadow: 0 0 5px #0056b3;
+        }
 
         .forMilliliters {
             opacity: 0;

@@ -10,7 +10,9 @@ use App\Models\Product;
 use App\Models\ProductGallery;
 use App\Models\ProductPricePerLiter;
 use App\Models\ProductPricePerMilliliter;
+use App\Models\ProductPricePerVolume;
 use App\Models\Review;
+use App\Models\VolumeRange;
 use App\Rules\FileTypeValidate;
 use Illuminate\Http\Request;
 
@@ -37,7 +39,9 @@ class ProductController extends Controller {
         },
         ])->orderBy('name')->get();
         $brands = Brand::where('status', 1)->orderBy('name')->get();
-        return view('admin.product.create', compact('pageTitle', 'allCategory', 'brands'));
+
+        $volRanges = VolumeRange::all();
+        return view('admin.product.create', compact('volRanges','pageTitle', 'allCategory', 'brands'));
     }
 
     public function store(Request $request) {
@@ -164,25 +168,43 @@ class ProductController extends Controller {
         }
 
 
-        if ($request->hasAny('price_per_liter')) {
+        foreach ($request->volumes as $volumeData) {
+            if (isset($volumeData['volume']) && isset($volumeData['price'])) {
+                $volume = $volumeData['volume'];
+                $price = $volumeData['price'];
 
-            $product_price_per_liter = new ProductPricePerLiter();
-            $product_price_per_liter->price = $request->price_per_liter;
-            $product_price_per_liter->liter = 1;
-            $product_price_per_liter->product_id = $product->id;
-            $product_price_per_liter->save();
-
+                // Ensure the volume and price are not empty before saving
+                if (!empty($volume) && !empty($price)) {
+                    $productPrice = new ProductPricePerVolume();
+                    $productPrice->product_id = $product->id; // Reference the saved product
+                    $productPrice->volume = $volume;
+                    $productPrice->price = $price;
+                    $productPrice->save();
+                }
+            }
         }
 
-        if ($request->hasAny('price_per_milliliter')) {
 
-            $product_price_per_liter = new ProductPricePerMilliliter();
-            $product_price_per_liter->price = $request->price_per_milliliter;
-            $product_price_per_liter->milliliter = 1;
-            $product_price_per_liter->product_id = $product->id;
-            $product_price_per_liter->save();
 
-        }
+        // if ($request->hasAny('price_per_liter')) {
+
+        //     $product_price_per_liter = new ProductPricePerLiter();
+        //     $product_price_per_liter->price = $request->price_per_liter;
+        //     $product_price_per_liter->liter = 1;
+        //     $product_price_per_liter->product_id = $product->id;
+        //     $product_price_per_liter->save();
+
+        // }
+
+        // if ($request->hasAny('price_per_milliliter')) {
+
+        //     $product_price_per_liter = new ProductPricePerMilliliter();
+        //     $product_price_per_liter->price = $request->price_per_milliliter;
+        //     $product_price_per_liter->milliliter = 1;
+        //     $product_price_per_liter->product_id = $product->id;
+        //     $product_price_per_liter->save();
+
+        // }
 
         $notify[] = ['success', 'Product added successfully.'];
         return redirect()->back()->withNotify($notify);
@@ -198,9 +220,17 @@ class ProductController extends Controller {
         $brands = Brand::where('status', 1)->orderBy('name')->get();
         $ppl = ProductPricePerLiter::whereProductId($id)->first();
 
-        // dd($ppl);
         $ppml = ProductPricePerMilliliter::whereProductId($id)->first();
-        return view('admin.product.edit', compact('ppml','ppl','pageTitle', 'product', 'allCategory', 'brands'));
+
+        $volRanges = ProductPricePerVolume::where('product_id', $id)->get();
+
+        if ($volRanges->isEmpty()) {
+
+            $volRanges = VolumeRange::all();
+
+        }
+
+        return view('admin.product.edit', compact('volRanges','ppml','ppl','pageTitle', 'product', 'allCategory', 'brands'));
     }
 
     public function update(Request $request, $id) {
@@ -352,6 +382,32 @@ class ProductController extends Controller {
             ]);
 
         }
+        foreach ($request->volumes as $volumeData) {
+            if (isset($volumeData['volume']) && isset($volumeData['price'])) {
+                $volume = $volumeData['volume'];
+                $price = $volumeData['price'];
+
+                // dd($volume);
+                if ($price != 0) {
+
+
+                // Check both product_id and volume for the update or create operation
+                ProductPricePerVolume::updateOrCreate(
+                    [
+                        'product_id' => $id,
+                        'volume' => $volume  // Ensure it checks both product_id and volume
+                    ],
+
+                    [
+                        'price' => $price,
+                        'product_id' => $id,
+                        'volume' => $volume
+                    ]
+                );
+                }
+            }
+        }
+
 
         $notify[] = ['success', 'Product updated successfully'];
         return redirect()->back()->withNotify($notify)->withInput();
