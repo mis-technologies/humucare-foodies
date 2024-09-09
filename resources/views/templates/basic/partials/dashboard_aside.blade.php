@@ -1,4 +1,6 @@
 
+@if (Auth::check())
+
 <aside class="dashboard__sidebar">
     <div class="dashboard__logo">
         <span class="close-dashboard-sidebar d-lg-none">
@@ -78,3 +80,4 @@
         </div>
     </div>
 </aside>
+@endif

@@ -9,8 +9,10 @@ use App\Models\Product;
 use App\Models\ProductPricePerLiter;
 use App\Models\ProductPricePerMilliliter;
 use App\Models\User;
+use App\Models\VolumeRange;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class CartController extends Controller {
 
@@ -23,8 +25,9 @@ class CartController extends Controller {
         $validator = Validator::make($request->all(), [
             'product_id' => 'required|integer',
             'quantity'   => 'required|integer|gt:0',
-            'liter'   => 'integer',
-            'milliliter'   => 'integer',
+            // 'volume'   => 'numeric|gt:0',
+            // 'price'   => 'numeric|gt:0',
+
         ]);
 
         if ($validator->fails()) {
@@ -33,9 +36,6 @@ class CartController extends Controller {
 
         $product = Product::findOrFail($request->product_id);
         $user_id = auth()->user()->id ?? null;
-        $product_price_per_liter = ProductPricePerLiter::whereProductId($product->id)->first();
-        $product_price_per_milliliter = ProductPricePerMilliliter::whereProductId($product->id)->first();
-
 
         if ($request->quantity > $product->quantity) {
             return response()->json(['error' => 'Requested quantity is not available in our stock.']);
@@ -59,10 +59,10 @@ class CartController extends Controller {
                 $cart->user_id    = auth()->user()->id;
                 $cart->product_id = $request->product_id;
                 $cart->quantity   = $request->quantity;
-                $cart->liter   = $request->liter;
-                $cart->price_per_liter = $request->pricePerLiter;
-                $cart->milliliter   = $request->milliliter;
-                $cart->price_per_milliliter = $request->pricePerMilliliter;
+                // $cart->liter   = $request->liter;
+                // $cart->price_per_liter = $request->pricePerLiter;
+                $cart->milliliter   = $request->volume;
+                $cart->price_per_milliliter = $request->price;
                 $cart->save();
 
             }
@@ -87,10 +87,10 @@ class CartController extends Controller {
                     "image"         => $product->image,
                     "product_id"    => $product->id,
                     "quantity"      => $request->quantity,
-                    "liter"         => $request->liter,
-                    "price_per_liter" => $request->pricePerLiter,
-                    "milliliter"         => $request->milliliter,
-                    "price_per_milliliter" => $request->pricePerMilliliter,
+                    // "liter"         => $request->liter,
+                    // "price_per_liter" => $request->pricePerLiter,
+                    "milliliter"         => $request->volume,
+                    "price_per_milliliter" => $request->price,
                 ];
             }
 
@@ -251,6 +251,18 @@ class CartController extends Controller {
             'discount'    => $discount,
             'totalAmount' => $totalAmount,
         ]);
+    }
+
+    public function alert()
+    {
+        
+        Alert::success('Success', 'You are eligible for Home service Discount, Use Homeservice below.');
+
+        return response()->json([
+
+            'success'=>'alert',
+
+        ], 200);
     }
 
 }

@@ -10,6 +10,7 @@ use App\Models\OrderDetail;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class CheckoutController extends Controller {
@@ -18,16 +19,23 @@ class CheckoutController extends Controller {
     }
 
     public function checkout(Request $request) {
+
         $pageTitle = 'Checkout';
         $total     = session()->get('total');
 
+            // Initialize $user_id to null
+            $user_id = null;
 
-        $user_id   = auth()->user()->id;
+            // Check if user is authenticated
+            if (auth()->check()) {
+                $user_id = auth()->user()->id;
+            }
 
-        if ($total) {
-            $data['subtotal'] = $total['subtotal'];
-            $data['discount'] = $total['discount'];
-            $data['total']    = $total['totalAmount'];
+        // dd($request->all());
+        if ($request->has('total')) {
+            $data['subtotal'] = $request->total;
+            $data['discount'] = 0;
+            $data['total']    = $request->total;
         } else {
             $subtotal = $this->cartSubTotal($user_id);
             if ($subtotal == 0) {
@@ -44,45 +52,38 @@ class CheckoutController extends Controller {
     }
 
     public function milCheckout(Request $request) {
+
         $pageTitle = 'Checkout';
         $total     = session()->get('total');
-        $user_id   = auth()->user()->id;
 
-        // Check if the user has 15 or more items with 500ml in the cart
-        $hasManyItemsWith500ml = $this->checkCartItemsForUser($user_id);
+         // Initialize $user_id to null
+            $user_id = null;
 
-        if ($hasManyItemsWith500ml || $total) {
-            $data['subtotal'] = 220;
+            // Check if user is authenticated
+            if (auth()->check()) {
+                $user_id = auth()->user()->id;
+            }
+
+
+        if ($request->has('total_hs')) {
+            $data['subtotal'] = $request->total_hs;
+            $data['discount'] = $request->toatl_hs;
+            $data['total']    = $request->toatl_hs;
+        } else {
+            $subtotal = $this->cartSubTotal($user_id);
+            if ($subtotal == 0) {
+                abort(404);
+            }
+            $data['subtotal'] = $subtotal/2;
             $data['discount'] = showAmount(0.00);
-            $data['total']    = 220;
-        }else {
-
-            Alert::info('info', 'Your cart items doesnt meet the home service requirement.');
-            return back();
-            // $subtotal = $this->cartSubTotal($user_id);
-            // if ($subtotal == 0) {
-            //     abort(404);
-            // }
-            // $data['subtotal'] = $subtotal;
-            // $data['discount'] = showAmount(0.00);
-            // $data['total']    = $subtotal;
+            $data['total']    = $subtotal/2;
         }
-
-
-
         $countries      = json_decode(file_get_contents(resource_path('views/partials/country.json')));
         $shippingMethod = ShippingMethod::where('status', 1)->get();
-
         return view($this->activeTemplate . 'checkout', compact('pageTitle', 'data', 'countries', 'shippingMethod'));
-    }
-    private function checkCartItemsForUser($userId)
-    {
-        $cartItemsCount = Cart::where('user_id', $userId)
-                                ->where('milliliter', 500)
-                                ->count();
 
-        return $cartItemsCount >= 15;
     }
+
 
     public function lCheckout(Request $request) {
         $pageTitle = 'Checkout';
@@ -148,6 +149,7 @@ class CheckoutController extends Controller {
 
     public function order(Request $request) {
 
+
         $request->validate([
             'firstname'       => 'required',
             'lastname'        => 'required',
@@ -162,8 +164,18 @@ class CheckoutController extends Controller {
             'payment_type'    => 'required|integer|in:1,2',
         ]);
 
-        $user       = auth()->user();
-        $subtotal   = $this->cartSubTotal($user->id);
+        if (Auth::check()) {
+
+            $user       = auth()->user();
+            $subtotal   = $this->cartSubTotal($user->id);
+        }
+
+
+        if (!Auth::check()) {
+            $subtotal   =0;
+        }
+
+
         $shipping   = ShippingMethod::where('id', $request->shipping_method)->where('status', 1)->first();
         if(!$shipping){
             $notify[] = ['error', 'Shipping method unable to locate.'];
@@ -179,6 +191,20 @@ class CheckoutController extends Controller {
             $grandTotal = $grandTotal - $discount;
         }
 
+
+        if ($request->has('hs_price')) {
+
+            $grandTotal = $request->hs_price + $shipping->price;
+
+
+        }
+        if (!Auth::check() && $request->has('price')) {
+
+            $grandTotal = $request->price + $shipping->price;
+        // dd($grandTotal);
+
+        }
+
         $address = [
             'address' => $request->address,
             'state'   => $request->state,
@@ -188,7 +214,7 @@ class CheckoutController extends Controller {
         ];
 
         $order                  = new Order();
-        $order->user_id         = $user->id;
+        $order->user_id         = $user->id ?? 0;
         $order->order_no        = getTrx();
         $order->subtotal        = $subtotal;
         $order->discount        = $discount ?? 0;
@@ -202,6 +228,8 @@ class CheckoutController extends Controller {
         if ($request->payment_type == 1) {
             $order->save();
             session()->put('order_id', $order->id);
+
+
             return redirect()->route('user.deposit');
         }
 
@@ -231,14 +259,14 @@ class CheckoutController extends Controller {
         }
 
         $adminNotification            = new AdminNotification();
-        $adminNotification->user_id   = $user->id;
+        $adminNotification->user_id   = $user->id ?? 0;
         $adminNotification->title     = 'Order successfully done via Cash on delivery.';
         $adminNotification->click_url = urlPath('admin.orders.detail',$order->id);
         $adminNotification->save();
 
         notify($user, 'ORDER_COMPLETE', [
             'method_name'     => 'Order successfully done via Cash on delivery.',
-            'user_name'       => $user->username,
+            'user_name'       => $user->username ?? 0,
             'subtotal'        => showAmount($subtotal),
             'shipping_charge' => showAmount($shipping->price),
             'total'           => showAmount($grandTotal),

@@ -12,10 +12,8 @@
                     <th>@lang('Product')</th>
                     <th>@lang('Unit Price')</th>
                     <th>@lang('Quantity')</th>
-                    <th>@lang('Liter')</th>
-                    <th>@lang('Price Per L')</th>
                     <th>@lang('Milliliter')</th>
-                    <th>@lang('Price Per Ml')</th>
+                    <th>@lang('Price Per ml')</th>
                     <th>@lang('Subtotal')</th>
                     <th>@lang('Remove')</th>
                 </tr>
@@ -34,10 +32,14 @@
                 $price = showDiscountPrice($cart->price,$cart->discount,$cart->discount_type);
                 }
 
-                    $ppl = $cart->liter * $cart->price_per_liter;
-                    $ppml = $cart->milliliter * $cart->price_per_milliliter;
-                    $subTotal = $price * $cart->quantity + ($ppl) + ($ppml);
+                if ($cart->price_per_milliliter) {
 
+                $subTotal = $cart->price_per_milliliter * $cart->quantity;
+
+                }else {
+                // $ppml = $cart->price_per_milliliter;
+                $subTotal = $price * $cart->quantity;
+                }
 
                 @endphp
 
@@ -74,28 +76,13 @@
                         </div>
                     </td>
 
-                    <td data-label="@lang('Liter')">
-                        <span class="liter">
-                            {{ $cart->liter }}
-                        </span>
-                    </td>
 
-                    <td data-label="@lang('Price Per Liter')">
-                        <span class="pppp">
-                            {{ $general->cur_sym }}
-                            <span class="ppl">
-                                {{ getAmount($cart->price_per_liter) }}
-                            </span>
-                        </span>
-                    </td>
                     <td data-label="@lang('Ml')">
                         <span class="milliliter">
                             {{ $cart->milliliter }}
                         </span>
                     </td>
-                    {{-- @php
-                        dd($cart->all());
-                    @endphp --}}
+
                     <td data-label="@lang('Price Per ml')">
                         <span class="pppp">
                             {{ $general->cur_sym }}
@@ -152,20 +139,38 @@
                         <h6 class="value total total-price text--base">{{ $general->cur_sym }}0.00</h6>
                     </li>
                     <li>
-                        <a href="{{ route('user.checkout') }}" class="cmn--btn w-100">@lang('Proceed to Checkout')</a>
+                        <form action="{{route('user.checkout')}}" method="POST">
+
+                            @csrf
+                            <input type="hidden" name="total" value="">
+                            <button class="cmn--btn w-100">Proceed To Checkout</button>
+
+                        </form>
+                        {{-- <a href="{{ route('user.checkout') }}" class="cmn--btn w-100">@lang('Proceed to Checkout')</a> --}}
                     </li>
-                    <hr>
-                    <p> Note: Apply for home service discounted charges if you have ordered 15 packs of products of 500ml each for a discounted fee of. <em>{{ $general->cur_sym }}220</em></p>
+
+                </ul>
+            </div>
+            <div class="col-xl-4 home-service d-none">
+                <ul class="cart-details">
+
+                    <li class="">
+                        <h6 class="title text-muted">@lang('Total')</h6>
+                        <h6 class="value total total-price-hs text--base">{{ $general->cur_sym }}0.00</h6>
+                    </li>
+                    <li>
+                        <form action="{{route('user.mil.checkout')}}" method="POST">
+                            @csrf
+                            <input type="hidden" name="total_hs" value="">
+                            <button class="cmn--btn w-100">@lang('Home service')</button>
+                        </form>
+                        {{-- <a href="{{ route('user.mil.checkout') }}" class="cmn--btn w-100">@lang('Home service')</a> --}}
+                    </li>
                     <hr>
                     <li>
-                        <a href="{{ route('user.mil.checkout') }}" class="cmn--btn w-100">@lang('Home service Checkout (mil)')</a>
+                        <p>You are eligible for Home service discount.</p>
                     </li>
-                    <hr>
-                    <p> Note: Apply for home service discounted charges if you have ordered 15 packs of products of 1l each for a discounted fee of. <em>{{ $general->cur_sym }}350</em></p>
-                    <hr>
-                    <li>
-                        <a href="{{ route('user.l.checkout') }}" class="cmn--btn w-100">@lang('Home service Checkout (l)')</a>
-                    </li>
+
                 </ul>
             </div>
         </div>
@@ -177,7 +182,8 @@
         <div class="modal-content">
             <div class="modal-header bg--base">
                 <strong class="modal-title">@lang('Confirmation Alert!')</strong>
-                <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
                 <p>@lang('Are you sure to remove this product?')</p>
@@ -200,8 +206,21 @@
         $('.cart-decrease').click(function(){
             currentRow = $(this).closest("tr");
             quantity = currentRow.find('input[name="quantity"]').val();
+
+            let productPrice = currentRow.find('.price').text();
+            let splitPrice = productPrice.split("{{ $general->cur_sym }}");
+            let price = parseFloat(splitPrice[1]);
+            let ppMilliliter = currentRow.find('.ppml').text();
+            let decPrice = 0;
+
             if(quantity > 0){
-                CartCalculation(currentRow)
+
+                if (ppMilliliter && parseFloat(ppMilliliter) > 0) {
+                decPrice = quantity * parseFloat(ppMilliliter);
+                } else {
+                    decPrice = price * quantity;
+                }
+                CartCalculation(currentRow, decPrice)
             }else{
                 currentRow.find('input[name="quantity"]').val(1)
                 notify('error', 'You have to order a minimum amount of one.');
@@ -209,7 +228,26 @@
         });
         $('.cart-increase').click(function(){
             currentRow = $(this).closest("tr");
-            CartCalculation(currentRow)
+            let quantity = currentRow.find('input[name="quantity"]').val();
+            let productPrice = currentRow.find('.price').text();
+            let splitPrice = productPrice.split("{{ $general->cur_sym }}");
+            let price = parseFloat(splitPrice[1]);
+            let ppMilliliter = currentRow.find('.ppml').text();
+
+            let incPrice = 0;
+
+            if (ppMilliliter && parseFloat(ppMilliliter) > 0) {
+                incPrice = quantity * parseFloat(ppMilliliter);
+            } else {
+                incPrice = price * quantity;
+            }
+
+            console.log(quantity);
+            console.log(price);
+            console.log(ppMilliliter);
+            console.log(incPrice);
+
+            CartCalculation(currentRow, incPrice);
         });
         $('input[name="quantity"]').on('focusout',function(){
             currentRow = $(this).closest("tr");
@@ -223,7 +261,7 @@
             }
         });
 
-        function CartCalculation(currentRow){
+        function CartCalculation(currentRow, incPrice, decPrice){
 
             let product_id = currentRow.find('.productName').data('product_id');
             let quantity = currentRow.find('input[name="quantity"]').val();
@@ -231,16 +269,25 @@
             let splitPrice = productPrice.split("{{ $general->cur_sym }}");
             let price = parseFloat(splitPrice[1]);
 
-            let ppLiter = currentRow.find('.ppl').text();
-            let liter = currentRow.find('.liter').text();
-            let ppl = ppLiter*liter;
-
             let ppMilliliter = currentRow.find('.ppml').text();
             let milliliter = currentRow.find('.milliliter').text();
-            let ppml = ppMilliliter*milliliter;
 
-            let totalPrice = quantity * price + (ppl) + (ppml);
-            currentRow.find('.subtotal').text("{{ $general->cur_sym }}"+totalPrice.toFixed(2));
+            let totalPrice;
+
+            // Use incPrice if passed, otherwise calculate using ppMilliliter or fallback to price
+            if (incPrice != 0) {
+                totalPrice = incPrice;
+            } else if (decPrice != 0) {
+                totalPrice = decPrice;
+            } else if (ppMilliliter && parseFloat(ppMilliliter) > 0) {
+                totalPrice = quantity * parseFloat(ppMilliliter);
+            }else {
+                totalPrice = quantity * price;
+            }
+
+            // Update the subtotal in the UI
+            currentRow.find('.subtotal').text("{{ $general->cur_sym }}" + totalPrice.toFixed(2));
+
 
             $('.coupon-show').addClass('d-none')
             $('.total-show').addClass('d-none')
@@ -289,8 +336,12 @@
             for (var i = 0; i < totalArr.length; i++) {
                 subtotal += totalArr[i];
             }
+            let sub = parseFloat(subtotal / 2);
+            $('input[name="total_hs"]').val(sub);
+
             $('.subtotal-price').text("{{ $general->cur_sym }}"+subtotal.toFixed(2));
             $('.total-price').text("{{ $general->cur_sym }}"+subtotal.toFixed(2));
+            $('.total-price-hs').text("{{ $general->cur_sym }}"+sub.toFixed(2));
         }
 
         let removeableItem = null;

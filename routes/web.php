@@ -362,6 +362,7 @@ Route::name('user.')->group(function () {
 });
 
 Route::name('user.')->prefix('user')->group(function () {
+
     Route::middleware('auth')->group(function () {
         Route::get('authorization', 'AuthorizationController@authorizeForm')->name('authorization');
         Route::get('resend-verify', 'AuthorizationController@sendVerifyCode')->name('send.verify.code');
@@ -378,21 +379,14 @@ Route::name('user.')->prefix('user')->group(function () {
             Route::post('change-password', 'UserController@submitPassword');
 
             // Deposit
-            Route::any('/payment', 'Gateway\PaymentController@deposit')->name('deposit');
-            Route::post('deposit/insert', 'Gateway\PaymentController@depositInsert')->name('deposit.insert');
-            Route::get('payment/preview', 'Gateway\PaymentController@depositPreview')->name('deposit.preview');
-            Route::get('payment/confirm', 'Gateway\PaymentController@depositConfirm')->name('deposit.confirm');
-            Route::get('payment/manual', 'Gateway\PaymentController@manualDepositConfirm')->name('deposit.manual.confirm');
-            Route::post('deposit/manual', 'Gateway\PaymentController@manualDepositUpdate')->name('deposit.manual.update');
-            Route::any('deposit/history', 'UserController@depositHistory')->name('deposit.history');
 
-            Route::get('/checkout', 'CheckoutController@checkout')->name('checkout');
-            Route::get('/milCheckout', 'CheckoutController@milCheckout')->name('mil.checkout');
+
+            // Route::get('/checkout', 'CheckoutController@checkout')->name('checkout');
+            // Route::get('/milCheckout', 'CheckoutController@milCheckout')->name('mil.checkout');
+            // Route::get('/homeservice', 'CartController@alert')->name('alert');
+
             Route::get('/lCheckout', 'CheckoutController@lCheckout')->name('l.checkout');
-            Route::get('/shipping/method', 'CheckoutController@shippingMethod')->name('shipping.method');
-            Route::post('/checkout/order', 'CheckoutController@order')->name('checkout.order');
 
-            Route::get('/my/orders', 'OrderController@orderHistory')->name('order.history');
             Route::get('/order/detail/{id}', 'OrderController@orderDetail')->name('order.detail');
             Route::get('digital/file/download/{id}/{order_id}','OrderController@fileDownload')->name('digital.file.download');
 
@@ -400,11 +394,32 @@ Route::name('user.')->prefix('user')->group(function () {
             Route::get('review/create/{id}/{name}','ReviewProductController@reviewCreate')->name('review.create');
             Route::post('review/store/{id}','ReviewProductController@reviewStore')->name('review.store');
 
-            Route::get('/payment/history','UserController@paymentHistory')->name('payment.history');
 
         });
     });
+    // deposit
+
+         Route::any('/payment', 'Gateway\PaymentController@deposit')->name('deposit');
+            Route::post('deposit/insert', 'Gateway\PaymentController@depositInsert')->name('deposit.insert');
+            Route::get('payment/preview', 'Gateway\PaymentController@depositPreview')->name('deposit.preview');
+            Route::get('payment/confirm', 'Gateway\PaymentController@depositConfirm')->name('deposit.confirm');
+            Route::get('payment/manual', 'Gateway\PaymentController@manualDepositConfirm')->name('deposit.manual.confirm');
+            Route::post('deposit/manual', 'Gateway\PaymentController@manualDepositUpdate')->name('deposit.manual.update');
+            Route::any('deposit/history', 'UserController@depositHistory')->name('deposit.history');
+
+        Route::get('/shipping/method', 'CheckoutController@shippingMethod')->name('shipping.method');
+
+        Route::get('/payment/history','UserController@paymentHistory')->name('payment.history');
+
+        Route::get('/my/orders', 'OrderController@orderHistory')->name('order.history');
+
+        Route::post('/checkout/order', 'CheckoutController@order')->name('checkout.order');
+
+        Route::post('/checkout', 'CheckoutController@checkout')->name('checkout');
+        Route::post('/milCheckout', 'CheckoutController@milCheckout')->name('mil.checkout');
+        Route::get('/homeservice', 'CartController@alert')->name('alert');
 });
+
 
 Route::get('/contact', 'SiteController@contact')->name('contact');
 Route::post('/contact', 'SiteController@contactSubmit');
@@ -461,3 +476,6 @@ Route::get('/add/wishlist', 'WishlistController@addWishlist')->name('add-wishlis
 Route::get('/get/wishlist/count', 'WishlistController@getWishlistCount')->name('get-wishlist-count');
 Route::get('/wishlist/products', 'WishlistController@wishlistProducts')->name('wishlist');
 Route::get('/remove/wishlist', 'WishlistController@removeWishlist')->name('remove-wishlist');
+
+
+

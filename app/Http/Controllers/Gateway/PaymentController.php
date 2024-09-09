@@ -62,7 +62,7 @@ class PaymentController extends Controller {
 
         $data                  = new Deposit();
         $data->order_id        = $order_id;
-        $data->user_id         = $user->id;
+        $data->user_id         = $user->id ?? 0;
         $data->method_code     = $gate->method_code;
         $data->method_currency = strtoupper($gate->currency);
         $data->charge          = $charge;

@@ -54,7 +54,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-control-label font-weight-bold">@lang('Price')
+                                <label class="form-control-label font-weight-bold">@lang('Basic Price')
                                     <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
@@ -96,15 +96,13 @@
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label class="form-control-label font-weight-bold">
-                                    <span class="text-danger">(You have option below to determine the rate at which you
-                                        can sell this product in milliliters or in liters. if you decide to sell in both
-                                        gradiations you can do so below. The buyers will see how much you sell per a
-                                        liter or per milliliters.)</span>
+                                    <span class="text-danger">(You can give specific prices to products per
+                                        milli-liters.)</span>
                                 </label>
 
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        {{-- <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-control-label font-weight-bold">@lang('Price Per Product Liters')
                                     <span class="text-danger">(Optional)</span>
@@ -132,7 +130,50 @@
                                         value="{{ old('price_per_milliliter') }}" min="0">
                                 </div>
                             </div>
+                        </div> --}}
+
+
+
+                        @foreach ($volRanges as $vol)
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-control-label font-weight-bold">@lang('Product ml')
+                                    <span class="text-danger">(Optional)</span>
+                                </label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">ml</span>
+                                    </div>
+
+                                    <!-- Use arrays for the volume data -->
+                                    <select name="volumes[{{$vol->volume}}][volume]" class="form-control">
+                                        <option selected disabled>Choose {{$vol->volume}}{{$vol->volume_gradiation}}
+                                        </option>
+                                        <option value="{{$vol->volume}}">{{$vol->volume}}</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-control-label font-weight-bold">@lang('Price for') {{$vol->volume}}
+                                    {{$vol->volume_gradiation}}
+                                    <span class="text-danger">(Optional)</span>
+                                </label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">{{ $general->cur_sym }}</span>
+                                    </div>
+
+                                    <!-- Use arrays for the price data -->
+                                    <input type="number" step="any" class="form-control"
+                                        name="volumes[{{$vol->volume}}][price]" min="0">
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+
+
                     </div>
                     <div class="row">
                         <div class="col-md-6">

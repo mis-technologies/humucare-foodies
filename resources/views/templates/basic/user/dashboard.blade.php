@@ -12,7 +12,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-xl-4 col-sm-6">
         <div class="dashboard-card">
             <div class="dashboard-card__icon">
@@ -119,7 +119,6 @@
         </tr>
         @endforelse
     </tbody>
-   
+
 </table>
 @endsection
- 

@@ -13,6 +13,7 @@ use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductPricePerLiter;
 use App\Models\ProductPricePerMilliliter;
+use App\Models\ProductPricePerVolume;
 use App\Models\SubCategory;
 use App\Models\Subscriber;
 use App\Models\SupportMessage;
@@ -495,11 +496,13 @@ class SiteController extends Controller {
         $product_price_per_liter = ProductPricePerLiter::whereProductId($id)->first();
         $product_price_per_milliliter = ProductPricePerMilliliter::whereProductId($id)->first();
 
+        $price_range = ProductPricePerVolume::where('product_id', $product->id)->get();
+
         $topProducts = Product::active()->where('sale_count', '!=', 0)->orderBy('sale_count', 'desc')->latest()->with('reviews')->take(8)->get();
         $seoContents['image']               = getImage(imagePath()['product']['thumb']['path'] .'/'.$product->image, imagePath()['product']['thumb']['size']);
         $seoContents['image_size']          = imagePath()['product']['thumb']['size'];
 
-        return view($this->activeTemplate . 'products.detail', compact('product_price_per_milliliter','product_price_per_liter','pageTitle', 'product', 'relatedProduct', 'topProducts', 'emptyMessage','seoContents'));
+        return view($this->activeTemplate . 'products.detail', compact('price_range','product_price_per_milliliter','product_price_per_liter','pageTitle', 'product', 'relatedProduct', 'topProducts', 'emptyMessage','seoContents'));
     }
 
     public function trackOrder() {
