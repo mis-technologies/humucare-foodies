@@ -94,7 +94,7 @@
                             </div>
                             <div class=" col-md-6">
                                 <div class="form-group">
-                                    <label class="form--label">@lang('State')
+                                    <label class="form--label">@lang('County')
                                         <span class="text--danger">*</span>
                                     </label>
                                     <input type="text" class="form-control form--control" name="state" required=""
@@ -112,7 +112,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form--label">@lang('Zip')
+                                    <label class="form--label">@lang('Post Code')
                                         <span class="text--danger">*</span>
                                     </label>
                                     <input type="text" class="form-control form--control" name="zip" required=""

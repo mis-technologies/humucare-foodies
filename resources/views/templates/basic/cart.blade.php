@@ -336,7 +336,7 @@
             for (var i = 0; i < totalArr.length; i++) {
                 subtotal += totalArr[i];
             }
-            let sub = parseFloat(subtotal / 2);
+            let sub = parseFloat(subtotal * 0.95);
             $('input[name="total_hs"]').val(sub);
 
             $('.subtotal-price').text("{{ $general->cur_sym }}"+subtotal.toFixed(2));

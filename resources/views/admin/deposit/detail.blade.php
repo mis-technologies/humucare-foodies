@@ -20,7 +20,10 @@
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             @lang('Username')
                             <span class="font-weight-bold">
+                                @if ($deposit->user_id != 0)
                                 <a href="{{ route('admin.users.detail', $deposit->user_id) }}">{{ @$deposit->user->username }}</a>
+
+                                @endif
                             </span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -104,7 +107,7 @@
                                         data-id="{{ $deposit->id }}"
                                         data-info="{{$details}}"
                                         data-amount="{{ showAmount($deposit->amount)}} {{ __($general->cur_text) }}"
-                                        data-username="{{ @$deposit->user->username }}"
+                                        data-username="{{ @$deposit->user->username ? @$deposit->user->username : 'null user' }}"
                                         data-toggle="tooltip" data-original-title="@lang('Approve')"><i class="fas fa-check"></i>
                                     @lang('Approve')
                                 </button>
@@ -113,7 +116,7 @@
                                         data-id="{{ $deposit->id }}"
                                         data-info="{{$details}}"
                                         data-amount="{{ showAmount($deposit->amount)}} {{ __($general->cur_text) }}"
-                                        data-username="{{ @$deposit->user->username }}"
+                                        data-username="{{ @$deposit->user->username ? @$deposit->user->username : 'null user' }}"
                                         data-toggle="tooltip" data-original-title="@lang('Reject')"><i class="fas fa-ban"></i>
                                     @lang('Reject')
                                 </button>
@@ -187,7 +190,7 @@
     <script>
         (function ($) {
             "use strict";
-            
+
             $('.approveBtn').on('click', function () {
                 var modal = $('#approveModal');
                 modal.find('input[name=id]').val($(this).data('id'));
