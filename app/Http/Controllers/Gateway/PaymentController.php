@@ -15,6 +15,7 @@ use App\Models\Transaction;
 use App\Models\User;
 use App\Rules\FileTypeValidate;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller {
     public function __construct() {
@@ -293,43 +294,53 @@ class PaymentController extends Controller {
         $order->payment_status = 0;
         $order->save();
 
-        $user    = auth()->user();
-        $carts   = Cart::where('user_id', $user->id)->get();
-        $general = GeneralSetting::first();
+        if (Auth::check()) {
 
-        foreach ($carts as $cart) {
+            $user    = auth()->user();
+            $carts   = Cart::where('user_id', $user->id)->get();
+            $general = GeneralSetting::first();
 
-            $product = Product::active()->findOrFail($cart->product_id);
-            $price = productPrice($product);
+            foreach ($carts as $cart) {
 
-            $orderDetail             = new OrderDetail();
-            $orderDetail->order_id   = $order->id;
-            $orderDetail->product_id = $cart->product_id;
-            $orderDetail->quantity   = $cart->quantity;
-            $orderDetail->price      = $price;
-            $orderDetail->save();
+                $product = Product::active()->findOrFail($cart->product_id);
+                $price = productPrice($product);
 
-            $product->decrement('quantity', $cart->quantity);
-            $product->save();
+                $orderDetail             = new OrderDetail();
+                $orderDetail->order_id   = $order->id;
+                $orderDetail->product_id = $cart->product_id;
+                $orderDetail->quantity   = $cart->quantity;
+                $orderDetail->price      = $price;
+                $orderDetail->save();
 
-            $cart->delete();
+                $product->decrement('quantity', $cart->quantity);
+                $product->save();
+
+                $cart->delete();
+            }
         }
 
+
+
         $adminNotification            = new AdminNotification();
-        $adminNotification->user_id   = $user->id;
+        $adminNotification->user_id   = $user->id ?? 'null';
         $adminNotification->title     = 'Order successfully done via ' . $data->gatewayCurrency()->name;
         $adminNotification->click_url = urlPath('admin.orders.detail', $order->id);
         $adminNotification->save();
 
-        notify($user, 'ORDER_COMPLETE', [
-            'method_name'     => 'Order successfully done via ' . $data->gatewayCurrency()->name,
-            'user_name'       => $user->username,
-            'subtotal'        => showAmount($order->subtotal),
-            'total'           => showAmount($order->total),
-            'shipping_charge' => showAmount($order->shipping_charge),
-            'currency'        => $general->cur_text,
-            'order_no'        => $order->order_no,
-        ]);
+        if (Auth::check()) {
+
+            notify($user, 'ORDER_COMPLETE', [
+                'method_name'     => 'Order successfully done via ' . $data->gatewayCurrency()->name,
+                'user_name'       => $user->username ?? 'null',
+                'subtotal'        => showAmount($order->subtotal),
+                'total'           => showAmount($order->total),
+                'shipping_charge' => showAmount($order->shipping_charge),
+                'currency'        => $general->cur_text,
+                'order_no'        => $order->order_no,
+            ]);
+
+        }
+
 
         $notify[] = ['success', 'Your payment request has been processed.'];
         return redirect()->route('user.order.history')->withNotify($notify);

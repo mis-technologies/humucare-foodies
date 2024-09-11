@@ -25,6 +25,17 @@
                     {{__($data->baseCurrency())}}
                 </span>
             </li>
+            <hr>
+            <span>
+                <em>Naira rates</em>
+            </span>
+            <li>
+                @lang('Conversion Rate:')
+                <span class="text--info">
+                    1 {{__($general->cur_text)}} @lang('=') 2000
+                    NGN
+                </span>
+            </li>
             <li>
                 @lang('In') {{$data->baseCurrency()}}: <span
                     class="text--primary">{{showAmount($data->final_amo)}}</span>
