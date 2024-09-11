@@ -165,17 +165,26 @@ class DepositController extends Controller {
     public function details($id) {
         $general   = GeneralSetting::first();
         $deposit   = Deposit::where('id', $id)->with($this->depoRelations)->firstOrFail();
+        if ($deposit->user_id !=0) {
+
         $pageTitle = $deposit->user->username . ' requested ' . showAmount($deposit->amount) . ' ' . $general->cur_text;
+
+        }else{
+        $pageTitle = 'null' . ' requested ' . showAmount($deposit->amount) . ' ' . $general->cur_text;
+
+        }
         $details   = ($deposit->detail != null) ? json_encode($deposit->detail) : null;
         return view('admin.deposit.detail', compact('pageTitle', 'deposit', 'details'));
     }
 
     public function approve(Request $request) {
 
+
         $request->validate(['id' => 'required|integer']);
         $deposit = Deposit::where('id', $request->id)->where('status', 2)->firstOrFail();
         $order   = Order::where('id', $deposit->order_id)->where('payment_status', 0)->firstOrFail();
         $user    = User::find($deposit->user_id);
+        // dd($deposit);
 
         $deposit->status = 1;
         $deposit->save();
@@ -184,17 +193,21 @@ class DepositController extends Controller {
         $order->save();
 
         $general = GeneralSetting::first();
-        notify($user, 'PAYMENT_APPROVE', [
-            'method_name'     => $deposit->gatewayCurrency()->name,
-            'method_currency' => $deposit->method_currency,
-            'method_amount'   => showAmount($deposit->final_amo),
-            'amount'          => showAmount($deposit->amount),
-            'charge'          => showAmount($deposit->charge),
-            'currency'        => $general->cur_text,
-            'rate'            => showAmount($deposit->rate),
-            'trx'             => $deposit->trx,
-            'order_no'        => $order->order_no,
-        ]);
+        if ($deposit->user_id != 0) {
+
+            notify($user, 'PAYMENT_APPROVE', [
+                'method_name'     => $deposit->gatewayCurrency()->name,
+                'method_currency' => $deposit->method_currency,
+                'method_amount'   => showAmount($deposit->final_amo),
+                'amount'          => showAmount($deposit->amount),
+                'charge'          => showAmount($deposit->charge),
+                'currency'        => $general->cur_text,
+                'rate'            => showAmount($deposit->rate),
+                'trx'             => $deposit->trx,
+                'order_no'        => $order->order_no,
+            ]);
+        }
+
         $notify[] = ['success', 'Payment request has been approved.'];
 
         return redirect()->route('admin.deposit.pending')->withNotify($notify);
@@ -222,18 +235,22 @@ class DepositController extends Controller {
         $order->save();
 
         $general = GeneralSetting::first();
-        notify($deposit->user, 'PAYMENT_REJECT', [
-            'method_name'       => $deposit->gatewayCurrency()->name,
-            'method_currency'   => $deposit->method_currency,
-            'method_amount'     => showAmount($deposit->final_amo),
-            'amount'            => showAmount($deposit->amount),
-            'charge'            => showAmount($deposit->charge),
-            'currency'          => $general->cur_text,
-            'rate'              => showAmount($deposit->rate),
-            'trx'               => $deposit->trx,
-            'rejection_message' => $request->message,
-            'order_no'          => $order->order_no,
-        ]);
+        if ($deposit->user_id != 0) {
+
+            notify($deposit->user, 'PAYMENT_REJECT', [
+                'method_name'       => $deposit->gatewayCurrency()->name,
+                'method_currency'   => $deposit->method_currency,
+                'method_amount'     => showAmount($deposit->final_amo),
+                'amount'            => showAmount($deposit->amount),
+                'charge'            => showAmount($deposit->charge),
+                'currency'          => $general->cur_text,
+                'rate'              => showAmount($deposit->rate),
+                'trx'               => $deposit->trx,
+                'rejection_message' => $request->message,
+                'order_no'          => $order->order_no,
+            ]);
+        }
+
 
         $notify[] = ['success', 'Payment request has been rejected.'];
         return redirect()->route('admin.deposit.pending')->withNotify($notify);
