@@ -231,6 +231,7 @@ class DepositController extends Controller {
         $deposit->save();
 
         $order->payment_status = 9;
+        
         $order->order_status   = 9;
         $order->save();
 
