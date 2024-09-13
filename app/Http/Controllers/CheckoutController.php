@@ -236,26 +236,29 @@ class CheckoutController extends Controller {
         $order->order_status = 0;
         $order->save();
 
-        $carts = Cart::where('user_id', $user->id)->get();
-        $general = GeneralSetting::first();
-        foreach ($carts as $cart) {
+        if (Auth::check()) {
 
-            $product = Product::active()->findOrFail($cart->product_id);
+                $carts = Cart::where('user_id', $user->id)->get();
+            $general = GeneralSetting::first();
+            foreach ($carts as $cart) {
 
-            $price = productPrice($product);
+                $product = Product::active()->findOrFail($cart->product_id);
 
-            $orderDetail             = new OrderDetail();
-            $orderDetail->order_id   = $order->id;
-            $orderDetail->product_id = $cart->product_id;
-            $orderDetail->quantity   = $cart->quantity;
-            $orderDetail->price      = $price;
-            $orderDetail->save();
+                $price = productPrice($product);
 
-            $product->decrement('quantity', $cart->quantity);
-            $product->save();
+                $orderDetail             = new OrderDetail();
+                $orderDetail->order_id   = $order->id;
+                $orderDetail->product_id = $cart->product_id;
+                $orderDetail->quantity   = $cart->quantity;
+                $orderDetail->price      = $price;
+                $orderDetail->save();
 
-            $cart->delete();
+                $product->decrement('quantity', $cart->quantity);
+                $product->save();
 
+                $cart->delete();
+
+            }
         }
 
         $adminNotification            = new AdminNotification();
@@ -264,15 +267,18 @@ class CheckoutController extends Controller {
         $adminNotification->click_url = urlPath('admin.orders.detail',$order->id);
         $adminNotification->save();
 
-        notify($user, 'ORDER_COMPLETE', [
-            'method_name'     => 'Order successfully done via Cash on delivery.',
-            'user_name'       => $user->username ?? 0,
-            'subtotal'        => showAmount($subtotal),
-            'shipping_charge' => showAmount($shipping->price),
-            'total'           => showAmount($grandTotal),
-            'currency'        => $general->cur_text,
-            'order_no'        => $order->order_no,
-        ]);
+        if (Auth::check()) {
+
+            notify($user, 'ORDER_COMPLETE', [
+                'method_name'     => 'Order successfully done via Cash on delivery.',
+                'user_name'       => $user->username ?? 0,
+                'subtotal'        => showAmount($subtotal),
+                'shipping_charge' => showAmount($shipping->price),
+                'total'           => showAmount($grandTotal),
+                'currency'        => $general->cur_text,
+                'order_no'        => $order->order_no,
+            ]);
+        }
 
         $notify[] = ['success', 'Order successfully completed.'];
         return redirect()->route('user.order.history')->withNotify($notify);
