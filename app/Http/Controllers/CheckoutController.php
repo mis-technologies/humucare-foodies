@@ -236,9 +236,11 @@ class CheckoutController extends Controller {
         $order->order_status = 0;
         $order->save();
 
+        $cart = session()->get('cart', []);
+        // dd($cart);
         if (Auth::check()) {
 
-                $carts = Cart::where('user_id', $user->id)->get();
+            $carts = Cart::where('user_id', $user->id)->get();
             $general = GeneralSetting::first();
             foreach ($carts as $cart) {
 
@@ -259,7 +261,29 @@ class CheckoutController extends Controller {
                 $cart->delete();
 
             }
+
+        }else {
+
+            foreach ($cart as $sessionCart) {
+
+                $product = Product::active()->findOrFail($sessionCart['product_id']);
+                $price = productPrice($product);
+
+                $orderDetail = new OrderDetail();
+                $orderDetail->order_id = $order->id;
+                $orderDetail->product_id = $sessionCart['product_id'];
+                $orderDetail->quantity = $sessionCart['quantity'];
+                $orderDetail->price = $price;
+                $orderDetail->save();
+
+                $product->decrement('quantity', $sessionCart['quantity']);
+                $product->save();
+            }
+
+            session()->forget('cart');
         }
+
+
 
         $adminNotification            = new AdminNotification();
         $adminNotification->user_id   = $user->id ?? 0;
