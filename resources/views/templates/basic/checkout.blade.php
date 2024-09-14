@@ -11,7 +11,7 @@
                         <div class="row">
                             @if (Route::currentRouteName() == 'user.mil.checkout' || Route::currentRouteName() ==
                             'user.checkout')
-                            <input type="hidden"
+                            <input type="hidden" required
                                 name="{{ Route::currentRouteName() == 'user.mil.checkout' ? 'hs_price' : 'price' }}"
                                 value="{{ $data['subtotal'] }}">
                             @endif
@@ -21,7 +21,7 @@
                                     <label class="form--label">@lang('First name')
                                         <span class="text--danger">*</span>
                                     </label>
-                                    <input type="text" class="form-control form--control" name="firstname" required=""
+                                    <input type="text" required class="form-control form--control" name="firstname" required=""
                                         value="{{ Auth::check() ? Auth::user()->firstname : '' }}" >
                                 </div>
                             </div>
@@ -31,7 +31,7 @@
                                     <label class="form--label">@lang('Last name')
                                         <span class="text--danger">*</span>
                                     </label>
-                                    <input type="text" class="form-control form--control" name="lastname" required=""
+                                    <input type="text" required class="form-control form--control" name="lastname" required=""
                                         value="{{ Auth::check() ? Auth::user()->lastname : '' }}" >
                                 </div>
                             </div>
@@ -41,7 +41,7 @@
                                     <label class="form--label">@lang('Phone')
                                         <span class="text--danger">*</span>
                                     </label>
-                                    <input type="tel" class="form-control form--control" name="mobile" required=""
+                                    <input type="tel" required class="form-control form--control" name="mobile" required=""
                                         value="{{ Auth::check() ? Auth::user()->mobile : '' }}" >
                                 </div>
                             </div>
@@ -50,7 +50,7 @@
                                     <label class="form--label">@lang('Email address')
                                         <span class="text--danger">*</span>
                                     </label>
-                                    <input type="email" name="email" class="form-control form--control" required=""
+                                    <input type="email" required name="email" class="form-control form--control" required=""
                                         value="{{ Auth::check() ? Auth::user()->email : '' }}" >
                                 </div>
                             </div>
@@ -59,7 +59,7 @@
                                     <label class="form--label">@lang('Country')
                                         <span class="text--danger">*</span>
                                     </label>
-                                    <select name="country" class="form-control form--control">
+                                    <select required name="country" class="form-control form--control">
                                         <option value="" selected disabled>@lang('Select One')</option>
                                         @foreach ($countries as $country)
                                         <option value="{{ $country->country }}" @if(old('country')==$country->country)
@@ -75,7 +75,7 @@
                                     <label class="form--label">@lang('Shipping address')
                                         <span class="text--danger">*</span>
                                     </label>
-                                    <select name="shipping_method" class="form-select form--control shipping-type">
+                                    <select name="shipping_method" required class="form-select form--control shipping-type">
                                         <option value="" selected disabled>@lang('Select One')</option>
                                         @foreach ($shippingMethod as $method)
                                         <option value="{{ $method->id }}">{{ __($method->name) }}</option>
@@ -88,7 +88,7 @@
                                     <label class="form--label">@lang('Address')
                                         <span class="text--danger">*</span>
                                     </label>
-                                    <input type="text" class="form-control form--control" name="address" required=""
+                                    <input type="text" required class="form-control form--control" name="address" required=""
                                         value="{{ old('address') }}">
                                 </div>
                             </div>
@@ -97,7 +97,7 @@
                                     <label class="form--label">@lang('County')
                                         <span class="text--danger">*</span>
                                     </label>
-                                    <input type="text" class="form-control form--control" name="state" required=""
+                                    <input type="text" required class="form-control form--control" name="state" required=""
                                         value="{{ old('state') }}">
                                 </div>
                             </div>
@@ -106,7 +106,7 @@
                                     <label class="form--label">@lang('City')
                                         <span class="text--danger">*</span>
                                     </label>
-                                    <input type="text" class="form-control form--control" name="city" required=""
+                                    <input type="text" required class="form-control form--control" name="city" required=""
                                         value="{{ old('city') }}">
                                 </div>
                             </div>
@@ -115,7 +115,7 @@
                                     <label class="form--label">@lang('Post Code')
                                         <span class="text--danger">*</span>
                                     </label>
-                                    <input type="text" class="form-control form--control" name="zip" required=""
+                                    <input type="text" required class="form-control form--control" name="zip" required=""
                                         value="{{ old('zip') }}">
                                 </div>
                             </div>
