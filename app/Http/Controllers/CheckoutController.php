@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\OrderPlacedMail;
 use App\Models\AdminNotification;
 use App\Models\Cart;
 use App\Models\GeneralSetting;
@@ -11,6 +12,7 @@ use App\Models\Product;
 use App\Models\ShippingMethod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class CheckoutController extends Controller {
@@ -302,7 +304,24 @@ class CheckoutController extends Controller {
                 'currency'        => $general->cur_text,
                 'order_no'        => $order->order_no,
             ]);
+
+            $orderContent = [
+
+                'method_name'     => 'Order successfully done via Cash on delivery.',
+                'user_name'       => $user->username ?? 0,
+                'subtotal'        => showAmount($subtotal),
+                'shipping_charge' => showAmount($shipping->price),
+                'total'           => showAmount($grandTotal),
+                'currency'        => $general->cur_text,
+                'order_no'        => $order->order_no,
+            ];
+
+            Mail::to($user->email)
+                ->cc(env('MAIL_USERNAME'))
+                ->send(new OrderPlacedMail($orderContent));
         }
+
+
 
         $notify[] = ['success', 'Order successfully completed.'];
         return redirect()->route('user.order.history')->withNotify($notify);
