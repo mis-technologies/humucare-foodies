@@ -227,12 +227,31 @@ class CheckoutController extends Controller {
         $order->address         = json_encode($address);
         $order->payment_type    = $request->payment_type;
 
-        if ($request->payment_type == 1) {
-            $order->save();
-            session()->put('order_id', $order->id);
+        if (Auth::check()) {
+            if ($request->payment_type == 1) {
+                $order->save();
+                session()->put('order_id', $order->id);
 
+                $general = GeneralSetting::first();
 
-            return redirect()->route('user.deposit');
+                $orderContent = [
+
+                    'method_name'     => 'Order Initiated via online payment.',
+                    'user_name'       => $user->username ?? 0,
+                    'subtotal'        => showAmount($subtotal),
+                    'shipping_charge' => showAmount($shipping->price),
+                    'total'           => showAmount($grandTotal),
+                    'currency'        => $general->cur_text,
+                    'order_no'        => $order->order_no,
+
+                ];
+
+                Mail::to($user->email)
+                    ->cc(env('MAIL_USERNAME'))
+                    ->send(new OrderPlacedMail($orderContent));
+
+                return redirect()->route('user.deposit');
+            }
         }
 
         $order->order_status = 0;
