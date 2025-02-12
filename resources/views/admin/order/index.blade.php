@@ -26,10 +26,19 @@
                                     </span>
                                 </td>
 
+                                @if ($order->user)
+
                                 <td data-label="@lang('User')">
                                     <a href="{{ route('admin.users.detail', @$order->user->id) }}">{{ @$order->user->username }}</a><br>{{ @$order->user->email }}
                                 </td>
-                                
+                                @else
+                                <td data-label="@lang('User')">
+                                    <a href="#">Anonymous</a><br>User
+                                </td>
+                                @endif
+
+
+
                                 <td data-label="@lang('Price')">
                                     <strong>{{ showAmount($order->total) }} {{ $general->cur_text }}</strong>
                                 </td>

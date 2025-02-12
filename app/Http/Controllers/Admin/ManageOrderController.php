@@ -154,7 +154,7 @@ class ManageOrderController extends Controller {
         $pageTitle = 'Transaction Logs of'.' '.$user->username;
         $transactions = Transaction::where('user_id',$user->id)->with('user')->orderBy('id','desc')->paginate(getPaginate());
         $emptyMessage = 'No transactions.';
-        return view('admin.reports.transactions', compact('pageTitle', 'transactions', 'emptyMessage')); 
+        return view('admin.reports.transactions', compact('pageTitle', 'transactions', 'emptyMessage'));
     }
 
 
@@ -210,13 +210,19 @@ class ManageOrderController extends Controller {
         $user    = $order->user;
         $general = GeneralSetting::first();
 
-        notify($user, 'ORDER_STATUS', [
-            'method_name' => 'Your order has now ' . $status,
-            'user_name'   => $user->username,
-            'order_no'    => $order->order_no,
-            'total'       => showAmount($order->total),
-            'currency'    => $general->cur_text,
-        ]);
+        if ($user != null) {
+
+
+            notify($user, 'ORDER_STATUS', [
+                'method_name' => 'Your order has now ' . $status,
+                'user_name'   => $user->username ? $user->username : 'null',
+                'order_no'    => $order->order_no,
+                'total'       => showAmount($order->total),
+                'currency'    => $general->cur_text,
+            ]);
+        }
+
+
 
         $notify[] = ['success', 'Order status change successfully.'];
         return back()->withNotify($notify);

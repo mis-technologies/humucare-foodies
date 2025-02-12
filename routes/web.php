@@ -378,13 +378,6 @@ Route::name('user.')->prefix('user')->group(function () {
             Route::get('change-password', 'UserController@changePassword')->name('change.password');
             Route::post('change-password', 'UserController@submitPassword');
 
-            // Deposit
-
-
-            // Route::get('/checkout', 'CheckoutController@checkout')->name('checkout');
-            // Route::get('/milCheckout', 'CheckoutController@milCheckout')->name('mil.checkout');
-            // Route::get('/homeservice', 'CartController@alert')->name('alert');
-
             Route::get('/lCheckout', 'CheckoutController@lCheckout')->name('l.checkout');
 
             Route::get('/order/detail/{id}', 'OrderController@orderDetail')->name('order.detail');

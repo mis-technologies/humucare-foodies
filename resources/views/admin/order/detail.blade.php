@@ -27,9 +27,17 @@
                 <a href="{{ route('admin.orders.invoice',$order->id) }}" class="btn btn--primary btn--shadow btn-block btn-lg" target="_blank">
                     @lang('Print Invoice')
                 </a>
+                @if ($order->user)
+
                 <a href="{{ route('admin.users.email.single', @$order->user->id) }}" class="btn btn--info btn--shadow btn-block btn-lg">
                     @lang('Send Email')
                 </a>
+                @else
+
+                <a href="#" class="btn btn--info btn--shadow btn-block btn-lg">
+                    Anonymous Mail
+                </a>
+                @endif
             </div>
         </div>
     </div>
@@ -56,9 +64,9 @@
                                 <span class="font-weight-bold">{{ __(@$order->deposit->gateway->name) }} @lang('payment gateway')</span>
                                 @else
                                 <span class="font-weight-bold">@lang('Cash on delivery')</span>
-                                @endif  
+                                @endif
                             </li>
-                            @if (@$order->deposit->trx)   
+                            @if (@$order->deposit->trx)
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 @lang('Payment Trx')
                                 <span class="font-weight-bold">{{ @$order->deposit->trx }}</span>
@@ -82,7 +90,7 @@
                                 @lang('Shipping Area')
                                 <span class="font-weight-bold">{{ __(@$order->shipping->name) }}</span>
                             </li>
-                            @if($order->discount != 0) 
+                            @if($order->discount != 0)
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 @lang('Coupon')
                                 <span class="font-weight-bold">{{ __(@$order->coupon->name) }}</span>
@@ -183,7 +191,7 @@
                             </tr>
                         </tfoot>
                     </table>
-                </div> 
+                </div>
             </div>
         </div>
     </div>

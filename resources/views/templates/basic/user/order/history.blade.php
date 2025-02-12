@@ -5,7 +5,7 @@
         <table class="table cmn--table">
             <thead>
                 <tr>
-                    <th scope="col">@lang('Order No')</th>
+                    <th scope="col">@lang('Orde No')</th>
                     <th scope="col">@lang('Payment Type')</th>
                     <th scope="col">@lang('Amount')</th>
                     <th scope="col">@lang('Order Status')</th>
@@ -13,6 +13,7 @@
                 </tr>
             </thead>
             <tbody>
+
                 @forelse ($orders as $order)
                 <tr>
                     <td data-label="@lang('Order No')">{{ $order->order_no }}</td>
@@ -50,7 +51,7 @@
                 </tr>
                 @endforelse
             </tbody>
-           
+
         </table>
         {{ $orders->links() }}
     </div>
@@ -85,7 +86,7 @@
 @push('script')
     <script>
         (function ($) {
-            "use strict";      
+            "use strict";
             $('.detailBtn').on('click', function() {
                 var modal = $('#detailModal');
                 var feedback = $(this).data('admin_feedback');
