@@ -229,6 +229,7 @@ class CheckoutController extends Controller {
             $order->save();
             session()->put('order_id', $order->id);
 
+            $test = "The test value";
 
             return redirect()->route('user.deposit');
         }
