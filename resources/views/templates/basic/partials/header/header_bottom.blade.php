@@ -32,6 +32,18 @@
                 <span></span>
                 <span></span>
             </div>
+
         </div>
+        <div class="row">
+            <div class=" p-5 col-lg-12">
+
+                <span style="font-size: 20px">Food Allergies :</span>
+
+                Due to the nature of our business we cannot gurantee that food prepared on these premises is free from allergenic ingredients.
+                This sign is being displayed in accordance with guidance from Brimingham city Council, Environmental Health.
+
+            </div>
+        </div>
+
     </div>
 </div>
