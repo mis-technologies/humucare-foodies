@@ -46,6 +46,7 @@ $sliders = getContent('banner.element',false,null,true);
                     @endforeach
                 </div>
             </div>
+
             @if ($todayDealProducts->count() > 0)
             <div class="banner__wrapper-products">
                 <div class="banner__wrapper-products-inner">
@@ -72,6 +73,19 @@ $sliders = getContent('banner.element',false,null,true);
                 </div>
             </div>
             @endif
+
+
+
+            <div class="d-flex justify-content-center w-100">
+                <div class="video-container" style="max-width: 700px; width: 100%;">
+                    <video width="100%" height="auto" controls autoplay muted loop style="border-radius: 10px;">
+                        <source src="/foodies.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            </div>
+
+
         </div>
     </div>
 </section>
