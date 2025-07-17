@@ -13,7 +13,7 @@ $policyPages = getContent('policy_pages.element', false, null, true);
     <div style="position: fixed; bottom: 20px; left: 20px; z-index: 999;">
 
 
-        <a href="tel:+4401214484501"
+        <a href="tel:+44 7485 705519"
         style="
          height: 50px;
          padding: 10px;
