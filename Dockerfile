@@ -3,23 +3,21 @@ FROM php:8.3-fpm
 # Set working directory
 WORKDIR /var/www/html
 
-# Install dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    unzip \
-    curl \
-    zip \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libicu-dev \
-    libzip-dev \
-    libonig-dev \
-    cron \
-    supervisor \
-    nginx \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql intl zip opcache mbstring bcmath
+# Install dependencies.
+# Retry loop + --fix-missing makes the build resilient to transient Debian
+# mirror hiccups (a single failed archive fetch would otherwise abort the build
+# with apt exit 100). --no-install-recommends keeps the download set small.
+RUN set -eux; \
+    for i in 1 2 3; do \
+        apt-get update && apt-get install -y --no-install-recommends --fix-missing \
+            git unzip curl zip \
+            libpng-dev libjpeg-dev libfreetype6-dev libicu-dev libzip-dev libonig-dev \
+            cron supervisor nginx \
+        && break || { echo "apt attempt $i failed; retrying in 5s"; apt-get clean; sleep 5; }; \
+    done; \
+    docker-php-ext-configure gd --with-freetype --with-jpeg; \
+    docker-php-ext-install gd pdo pdo_mysql intl zip opcache mbstring bcmath; \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
