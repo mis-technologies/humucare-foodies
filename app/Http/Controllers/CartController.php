@@ -41,8 +41,26 @@ class CartController extends Controller {
             return response()->json(['error' => 'Requested quantity is not available in our stock.']);
         }
 
+        // Validate + price the chosen modifiers server-side. Options that are
+        // not attached to this dish are ignored, so prices can't be smuggled.
+        $resolved = resolveProductOptions($product, $request->options);
+
+        if ($resolved['error']) {
+            return response()->json(['error' => $resolved['error']]);
+        }
+
+        $options      = $resolved['options'];
+        $optionsPrice = $resolved['price'];
+        // Same dish with different modifiers = a different basket line.
+        $signature    = md5(json_encode($options));
+
         if ($user_id) {
-            $cart = Cart::where('user_id', $user_id)->where('product_id', $request->product_id)->first();
+            $cart = Cart::where('user_id', $user_id)
+                ->where('product_id', $request->product_id)
+                ->get()
+                ->first(function ($row) use ($signature) {
+                    return md5(json_encode($row->options ?: [])) === $signature;
+                });
 
             if ($cart) {
 
@@ -63,23 +81,27 @@ class CartController extends Controller {
                 // $cart->price_per_liter = $request->pricePerLiter;
                 $cart->milliliter   = $request->volume;
                 $cart->price_per_milliliter = $request->price;
+                $cart->options       = $options;
+                $cart->options_price = $optionsPrice;
                 $cart->save();
 
             }
 
         } else {
             $cart = session()->get('cart', []);
+            // key by dish + modifiers so "Large" and "Regular" are separate lines
+            $key  = $options ? $product->id . '-' . substr($signature, 0, 8) : $product->id;
 
-            if (isset($cart[$product->id])) {
+            if (isset($cart[$key])) {
 
-                if ($cart[$product->id]['quantity'] >= $product->quantity) {
+                if ($cart[$key]['quantity'] >= $product->quantity) {
                     return response()->json(['error' => 'Requested quantity is not available in our stock.']);
                 }
 
-                $cart[$product->id]['quantity'] += $request->quantity;
+                $cart[$key]['quantity'] += $request->quantity;
             } else {
                 $general = GeneralSetting::first();
-                $cart[$product->id] = [
+                $cart[$key] = [
                     "name"          => $product->name,
                     "price"         => $product->price,
                     "discount"      => ($product->today_deals == 1) ? $general->discount : $product->discount,
@@ -91,6 +113,9 @@ class CartController extends Controller {
                     // "price_per_liter" => $request->pricePerLiter,
                     "milliliter"         => $request->volume,
                     "price_per_milliliter" => $request->price,
+                    "options"        => $options,
+                    "options_price"  => $optionsPrice,
+                    "cart_key"       => $key,
                 ];
             }
 
@@ -118,13 +143,30 @@ class CartController extends Controller {
             return response()->json(['error' => 'Requested quantity is not available in our stock.']);
         }
 
+        // A dish can occupy several basket lines (same dish, different
+        // modifiers), so prefer the line key and only fall back to product_id.
         if ($user_id != null) {
-            $cart           = Cart::where('user_id', $user_id)->where('product_id', $request->product_id)->first();
+            $cart = $request->cart_key
+                ? Cart::where('user_id', $user_id)->where('id', $request->cart_key)->first()
+                : Cart::where('user_id', $user_id)->where('product_id', $request->product_id)->first();
+
+            if (!$cart) {
+                return response()->json(['error' => 'Cart item not found.']);
+            }
+
             $cart->quantity = $request->quantity;
             $cart->save();
         } else {
-            $cart                                   = session()->get('cart');
-            $cart[$request->product_id]["quantity"] = $request->quantity;
+            $cart = session()->get('cart', []);
+            $key  = $request->cart_key && isset($cart[$request->cart_key])
+                ? $request->cart_key
+                : $request->product_id;
+
+            if (!isset($cart[$key])) {
+                return response()->json(['error' => 'Cart item not found.']);
+            }
+
+            $cart[$key]["quantity"] = $request->quantity;
             session()->put('cart', $cart);
         }
 
@@ -144,11 +186,22 @@ class CartController extends Controller {
         $user_id = auth()->user()->id ?? null;
 
         if ($user_id) {
-            $cart = Cart::where('user_id', $user_id)->where('product_id', $request->product_id)->first();
+            $cart = $request->cart_key
+                ? Cart::where('user_id', $user_id)->where('id', $request->cart_key)->first()
+                : Cart::where('user_id', $user_id)->where('product_id', $request->product_id)->first();
+
+            if (!$cart) {
+                return response()->json(['error' => 'Cart item not found.']);
+            }
+
             $cart->delete();
         } else {
-            $cart = session()->get('cart');
-            unset($cart[$request->product_id]);
+            $cart = session()->get('cart', []);
+            $key  = $request->cart_key && isset($cart[$request->cart_key])
+                ? $request->cart_key
+                : $request->product_id;
+
+            unset($cart[$key]);
             session()->put('cart', $cart);
         }
 
@@ -180,7 +233,8 @@ class CartController extends Controller {
         $carts = json_decode(json_encode($cart)) ?? [];
 
         if ($user_id) {
-            $carts = Cart::where('user_id', $user_id)->with('product')->orderBy('id', 'asc')->get();
+            // product.category is rendered as the row tag on the cart page
+            $carts = Cart::where('user_id', $user_id)->with('product.category')->orderBy('id', 'asc')->get();
         }
 
         session()->forget('total');

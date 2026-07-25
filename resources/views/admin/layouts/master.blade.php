@@ -100,6 +100,149 @@
 
 @stack('script')
 
+{{-- ==========================================================
+     New-order alert: polls for orders, chimes and shows a toast.
+     Sound is synthesised via the Web Audio API so there is no
+     audio asset to ship or 404.
+     ========================================================== --}}
+<style>
+    .fd-order-toast{
+        position:fixed;top:18px;right:18px;z-index:99999;width:330px;max-width:calc(100vw - 36px);
+        background:#14142e;color:#fff;border-radius:14px;padding:16px 18px;
+        box-shadow:0 18px 45px -12px rgba(0,0,0,.55);border-left:5px solid #f5a623;
+        font-family:inherit;transform:translateX(120%);transition:transform .35s cubic-bezier(.2,.7,.3,1);
+    }
+    .fd-order-toast.show{transform:none;}
+    .fd-order-toast__top{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+    .fd-order-toast__bell{
+        width:34px;height:34px;border-radius:50%;background:rgba(245,166,35,.18);color:#f5a623;
+        display:inline-flex;align-items:center;justify-content:center;font-size:16px;
+        animation:fdRing .9s ease-in-out infinite;
+    }
+    {{-- @@ escapes the at-rule; a bare @keyframes is swallowed by the Blade compiler --}}
+    @@keyframes fdRing{0%,100%{transform:rotate(0)}20%{transform:rotate(14deg)}40%{transform:rotate(-12deg)}60%{transform:rotate(8deg)}80%{transform:rotate(-6deg)}}
+    .fd-order-toast__title{font-weight:700;font-size:15px;margin:0;color:#fff;}
+    .fd-order-toast__meta{font-size:13px;color:rgba(255,255,255,.7);margin:0 0 12px;}
+    .fd-order-toast__actions{display:flex;gap:8px;}
+    .fd-order-toast__btn{
+        flex:1;text-align:center;border:0;cursor:pointer;border-radius:9px;padding:9px 12px;
+        font-size:13px;font-weight:600;text-decoration:none;
+    }
+    .fd-order-toast__btn--go{background:#f5a623;color:#fff;}
+    .fd-order-toast__btn--go:hover{background:#e08e12;color:#fff;}
+    .fd-order-toast__btn--x{background:rgba(255,255,255,.12);color:#fff;}
+    .fd-sound-nudge{
+        position:fixed;bottom:18px;right:18px;z-index:99999;display:none;align-items:center;gap:8px;
+        background:#f5a623;color:#fff;border:0;border-radius:99px;padding:11px 18px;cursor:pointer;
+        font-size:13px;font-weight:600;box-shadow:0 12px 30px -10px rgba(245,166,35,.9);
+    }
+</style>
+
+<button type="button" class="fd-sound-nudge" id="fdSoundNudge">🔔 Enable order sound</button>
+
+<script>
+(function () {
+    "use strict";
+    var POLL_MS = 15000;
+    var KEY     = 'fdLastOrderId';
+    var url     = "{{ route('admin.orders.new.check') }}";
+    var audioCtx = null, soundReady = false;
+
+    /* ---- synthesised chime (no audio file needed) ---- */
+    function initAudio() {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        if (!audioCtx) audioCtx = new AC();
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume().then(function () { soundReady = true; hideNudge(); });
+        } else { soundReady = true; hideNudge(); }
+    }
+    function beep(at, freq) {
+        var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = 'sine'; o.frequency.value = freq;
+        o.connect(g); g.connect(audioCtx.destination);
+        g.gain.setValueAtTime(0.0001, at);
+        g.gain.exponentialRampToValueAtTime(0.35, at + 0.03);
+        g.gain.exponentialRampToValueAtTime(0.0001, at + 0.42);
+        o.start(at); o.stop(at + 0.45);
+    }
+    function chime() {
+        if (!audioCtx || audioCtx.state !== 'running') { showNudge(); return; }
+        var t = audioCtx.currentTime;
+        for (var r = 0; r < 3; r++) {          // ring three times
+            beep(t + r * 0.75, 880);
+            beep(t + r * 0.75 + 0.18, 1320);
+        }
+    }
+    function showNudge() { document.getElementById('fdSoundNudge').style.display = 'inline-flex'; }
+    function hideNudge() { document.getElementById('fdSoundNudge').style.display = 'none'; }
+
+    // Browsers block audio until the user interacts — arm it on first gesture.
+    ['click', 'keydown'].forEach(function (ev) {
+        document.addEventListener(ev, function armOnce() {
+            initAudio();
+            document.removeEventListener(ev, armOnce);
+        }, { once: true });
+    });
+    document.getElementById('fdSoundNudge').addEventListener('click', function () { initAudio(); chime(); });
+
+    /* ---- toast ---- */
+    function toast(data) {
+        var el = document.createElement('div');
+        el.className = 'fd-order-toast';
+        el.innerHTML =
+            '<div class="fd-order-toast__top">' +
+                '<span class="fd-order-toast__bell"><i class="fas fa-bell"></i></span>' +
+                '<p class="fd-order-toast__title">New order received!</p>' +
+            '</div>' +
+            '<p class="fd-order-toast__meta">#' + (data.order_no || '') + ' &middot; ' +
+                (data.currency || '') + (data.total || '') +
+                ' &middot; ' + data.pending_count + ' pending</p>' +
+            '<div class="fd-order-toast__actions">' +
+                '<a class="fd-order-toast__btn fd-order-toast__btn--go" href="' + data.detail_url + '">View order</a>' +
+                '<button type="button" class="fd-order-toast__btn fd-order-toast__btn--x">Dismiss</button>' +
+            '</div>';
+        document.body.appendChild(el);
+        requestAnimationFrame(function () { el.classList.add('show'); });
+
+        function close() { el.classList.remove('show'); setTimeout(function () { el.remove(); }, 400); }
+        el.querySelector('.fd-order-toast__btn--x').addEventListener('click', close);
+        setTimeout(close, 30000);
+
+        if (window.Notification && Notification.permission === 'granted') {
+            new Notification('New order #' + (data.order_no || ''), { body: (data.currency || '') + (data.total || '') });
+        }
+    }
+
+    /* ---- poll ---- */
+    function poll() {
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (d) {
+                if (!d) return;
+                var seen = parseInt(localStorage.getItem(KEY) || '0', 10);
+                // First run just records the baseline so we don't alert on history.
+                if (!seen) { localStorage.setItem(KEY, d.latest_id); return; }
+                if (d.latest_id > seen) {
+                    localStorage.setItem(KEY, d.latest_id);
+                    chime();
+                    toast(d);
+                }
+            })
+            .catch(function () { /* offline / session expired — try again next tick */ });
+    }
+
+    if (window.Notification && Notification.permission === 'default') {
+        document.addEventListener('click', function askOnce() {
+            Notification.requestPermission();
+            document.removeEventListener('click', askOnce);
+        }, { once: true });
+    }
+
+    poll();
+    setInterval(poll, POLL_MS);
+})();
+</script>
 
 </body>
 </html>

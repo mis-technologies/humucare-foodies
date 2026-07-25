@@ -33,6 +33,14 @@ class AppServiceProvider extends ServiceProvider {
      */
     public function boot() {
 
+        // The app is not installed until its core tables exist. Without this
+        // guard every artisan command (including `migrate` itself) crashes on
+        // a fresh database, making the app impossible to install.
+        if (!\Illuminate\Support\Facades\Schema::hasTable('general_settings')
+            || !GeneralSetting::query()->exists()) {
+            return;
+        }
+
         $activeTemplate                  = activeTemplate();
         $general                         = GeneralSetting::first();
         $viewShare['general']            = $general;

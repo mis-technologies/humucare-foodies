@@ -202,58 +202,13 @@
                     </div>
                 </div>
             </div>
-            <div class="card my-2">
-                <div class="card-header">
-                    <h5>@lang('Digital Item')</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="form-control-label font-weight-bold">@lang('Is Digital') <span
-                                        class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <select class="form-control" id="digital_item" name="digital_item">
-                                        <option value="1">@lang('Yes')</option>
-                                        <option value="0" selected>@lang('No')</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 d-none" id="inputSection">
-                            <div class="form-group">
-                                <label class="form-control-label font-weight-bold">@lang('Select File Type')
-                                    <span class="text-danger">*</span></label>
-                                <select class="form-control" id="file_type" name="file_type">
-                                    <option value="" selected disabled>@lang('Select one')</option>
-                                    <option value="1">@lang('File Upload')</option>
-                                    <option value="2">@lang('Link')</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4 d-none" id="fileSection">
-                            <div class="form-group">
-                                <label class="form-control-label font-weight-bold">@lang('Upload File') <span
-                                        class="text-danger">*</span></label>
-                                <div class="custom-file">
-                                    <input type="file" name="digi_file" class="custom-file-input" id="inputGroupFile01"
-                                        aria-describedby="inputGroupFileAddon01">
-                                    <label class="custom-file-label" for="inputGroupFile01">@lang('Choose file')</label>
-                                </div>
-                                <small class="mt-2 text-facebook">@lang('Supported files'): <b>@lang('pdf'),
-                                        @lang('docx'), @lang('txt'), @lang('zip'), @lang('xlx'), @lang('csv'),
-                                        @lang('ai'), @lang('psd'), @lang('pptx') </b></small>
-                            </div>
-                        </div>
-                        <div class="col-md-4 d-none" id="linkSection">
-                            <div class="form-group">
-                                <label class="form-control-label font-weight-bold">@lang('Link Address') <span
-                                        class="text-danger">*</span></label>
-                                <input type="text" name="digi_link" class="form-control" placeholder="@lang('Link')">
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            {{-- "Digital Item" removed: a restaurant sells physical food, not
+                 downloadable files. store() still requires digital_item, so we
+                 post a constant 0 (never digital). --}}
+            <input type="hidden" name="digital_item" value="0">
+            <div class="d-none" id="digitalItemCompat">
+                <input type="hidden" name="file_type" value="">
+                <input type="hidden" name="digi_link" value="">
             </div>
             <div class="card my-2">
                 <div class="card-header">

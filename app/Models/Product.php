@@ -17,6 +17,13 @@ class Product extends Model {
         return $this->belongsTo(Category::class, 'category_id');
     }
 
+    /** reusable modifier groups attached to this dish */
+    public function optionGroups() {
+        return $this->belongsToMany(OptionGroup::class, 'product_option_group')
+            ->where('option_groups.status', 1)
+            ->orderBy('product_option_group.sort_order');
+    }
+
     public function subcategory() {
         return $this->belongsTo(SubCategory::class, 'subcategory_id');
     }

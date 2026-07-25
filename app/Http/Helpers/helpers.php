@@ -86,49 +86,78 @@ function getNumber($length = 8) {
     return $randomString;
 }
 
+/** True when uploads should go to S3 rather than the local public/ disk. */
+function usesS3Storage() {
+    return config('filesystems.default') === 's3';
+}
+
 //moveable
 function uploadImage($file, $location, $size = null, $old = null, $thumb = null) {
-    $path = makeDirectory($location);
+    $filename = uniqid() . time() . '.' . $file->getClientOriginalExtension();
+    $ext      = strtolower($file->getClientOriginalExtension());
 
+    // ---------- S3 ----------
+    if (usesS3Storage()) {
+        if ($old) {
+            removeFile($location . '/' . $old);
+            removeFile($location . '/thumb_' . $old);
+        }
+        $image = Image::make($file);
+        if ($size) {
+            $size = explode('x', strtolower($size));
+            $image->resize($size[0], $size[1]);
+        }
+        // no ACL: the bucket has ACLs disabled and serves via bucket policy
+        Storage::disk('s3')->put($location . '/' . $filename, (string) $image->encode($ext));
+
+        if ($thumb) {
+            $thumb = explode('x', $thumb);
+            $t = Image::make($file)->resize($thumb[0], $thumb[1]);
+            Storage::disk('s3')->put($location . '/thumb_' . $filename, (string) $t->encode($ext));
+        }
+        return $filename;
+    }
+
+    // ---------- local disk ----------
+    $path = makeDirectory($location);
     if (!$path) {
         throw new Exception('File could not been created.');
     }
-
     if ($old) {
         removeFile($location . '/' . $old);
         removeFile($location . '/thumb_' . $old);
     }
-
-    $filename = uniqid() . time() . '.' . $file->getClientOriginalExtension();
-    $image    = Image::make($file);
-
+    $image = Image::make($file);
     if ($size) {
         $size = explode('x', strtolower($size));
         $image->resize($size[0], $size[1]);
     }
-
     $image->save($location . '/' . $filename);
-
     if ($thumb) {
         $thumb = explode('x', $thumb);
         Image::make($file)->resize($thumb[0], $thumb[1])->save($location . '/thumb_' . $filename);
     }
-
     return $filename;
 }
 
 function uploadFile($file, $location, $size = null, $old = null) {
-    $path = makeDirectory($location);
+    $filename = uniqid() . time() . '.' . $file->getClientOriginalExtension();
 
+    if (usesS3Storage()) {
+        if ($old) {
+            removeFile($location . '/' . $old);
+        }
+        Storage::disk('s3')->put($location . '/' . $filename, file_get_contents($file->getRealPath()));
+        return $filename;
+    }
+
+    $path = makeDirectory($location);
     if (!$path) {
         throw new Exception('File could not been created.');
     }
-
     if ($old) {
         removeFile($location . '/' . $old);
     }
-
-    $filename = uniqid() . time() . '.' . $file->getClientOriginalExtension();
     $file->move($location, $filename);
     return $filename;
 }
@@ -143,12 +172,24 @@ function makeDirectory($path) {
 }
 
 function removeFile($path) {
+    if (usesS3Storage()) {
+        try {
+            if (Storage::disk('s3')->exists($path)) {
+                return Storage::disk('s3')->delete($path);
+            }
+        } catch (\Throwable $e) {
+            // deleting a missing object must never break the caller
+        }
+        return false;
+    }
     return file_exists($path) && is_file($path) ? @unlink($path) : false;
 }
 
 function activeTemplate($asset = false) {
     $general  = GeneralSetting::first(['active_template']);
-    $template = $general->active_template;
+    // Degrade to the default template instead of a fatal when settings are
+    // missing (fresh install, or mid-seed when the table is momentarily empty).
+    $template = optional($general)->active_template ?: 'basic';
     $sess     = session()->get('template');
 
     if (trim($sess)) {
@@ -164,7 +205,7 @@ function activeTemplate($asset = false) {
 
 function activeTemplateName() {
     $general  = GeneralSetting::first(['active_template']);
-    $template = $general->active_template;
+    $template = optional($general)->active_template ?: 'basic';
     $sess     = session()->get('template');
 
     if (trim($sess)) {
@@ -460,20 +501,30 @@ function getPageSections($arr = false) {
 }
 
 function getImage($image, $size = null, $isAvatar = false) {
-    $clean = '';
-
-    if (file_exists($image) && is_file($image)) {
-        return asset($image) . $clean;
+    // 1) local file (repo static assets + any legacy local uploads).
+    //    public_path() makes this independent of the process CWD.
+    if ($image && file_exists(public_path($image)) && is_file(public_path($image))) {
+        return asset($image);
     }
 
+    // 2) uploaded to S3. Only build a URL for a real filename (has an
+    //    extension) — a bare directory path means "no image set" and should
+    //    fall through to the placeholder. No per-image S3 API call is made.
+    if (usesS3Storage()) {
+        $base = $image ? basename($image) : '';
+        $s3Url = config('filesystems.disks.s3.url');
+        if ($base !== '' && strpos($base, '.') !== false && $s3Url) {
+            return rtrim($s3Url, '/') . '/' . ltrim($image, '/');
+        }
+    }
+
+    // 3) fallbacks
     if ($isAvatar) {
         return asset('assets/images/avatar.jpg');
     }
-
     if ($size) {
         return route('placeholder.image', $size);
     }
-
     return asset('assets/images/default.png');
 }
 
@@ -929,3 +980,188 @@ function discountText($product,$general){
             </span>";
 }
 
+
+/**
+ * Resolve posted modifier selections into a validated, priced snapshot.
+ *
+ * Returns ['options' => [['group'=>..,'name'=>..,'price'=>..], ...],
+ *          'price'   => <total delta>,
+ *          'error'   => <string|null>]
+ *
+ * Validation lives here (not the UI) so a hand-crafted request can't skip a
+ * required choice or smuggle an option that isn't attached to the dish.
+ */
+function resolveProductOptions($product, $selectedIds) {
+    // NB: must be a closure, not 'intval' — Collection::map passes the key as
+    // the 2nd arg, which intval() reads as the numeric base, so every element
+    // after the first was silently converted to 0.
+    $selectedIds = collect((array) $selectedIds)->filter()->map(function ($id) {
+        return (int) $id;
+    })->unique();
+    $chosen      = [];
+    $delta       = 0;
+
+    $groups = $product->optionGroups()->with('options')->get();
+
+    foreach ($groups as $group) {
+        $picked = $group->options->whereIn('id', $selectedIds->all());
+
+        if ($group->is_required && $picked->count() < max(1, $group->min_select)) {
+            return ['options' => [], 'price' => 0, 'error' => 'Please choose an option for "' . $group->name . '".'];
+        }
+        if ($group->type == 'single' && $picked->count() > 1) {
+            return ['options' => [], 'price' => 0, 'error' => 'Only one choice allowed for "' . $group->name . '".'];
+        }
+        if ($group->max_select > 0 && $picked->count() > $group->max_select) {
+            return ['options' => [], 'price' => 0, 'error' => 'You may pick at most ' . $group->max_select . ' for "' . $group->name . '".'];
+        }
+
+        foreach ($picked as $opt) {
+            $chosen[] = ['group' => $group->name, 'name' => $opt->name, 'price' => (float) $opt->price];
+            $delta += (float) $opt->price;
+        }
+    }
+
+    return ['options' => $chosen, 'price' => $delta, 'error' => null];
+}
+
+/** Human-readable one-line summary of a cart/order line's modifiers. */
+function optionSummary($options) {
+    if (empty($options)) { return ''; }
+    if (is_string($options)) { $options = json_decode($options, true) ?: []; }
+    return collect($options)->pluck('name')->implode(', ');
+}
+
+/**
+ * Email the restaurant when an order arrives.
+ *
+ * The shipped code only ever notified the CUSTOMER — nothing told the kitchen.
+ * Sends to the address in General Settings ("email_from"), using the
+ * ADMIN_NEW_ORDER template. Never let a mail failure break checkout.
+ */
+function notifyAdminNewOrder($order) {
+    try {
+        $general = GeneralSetting::first();
+        $to      = trim($general->email_from ?? '');
+
+        if (!$to || $general->en != 1) {
+            return; // no destination, or email notifications switched off
+        }
+
+        $template = EmailTemplate::where('act', 'ADMIN_NEW_ORDER')->where('email_status', 1)->first();
+        if (!$template) {
+            return;
+        }
+
+        $order->loadMissing('orderDetail.product', 'user');
+
+        $items = [];
+        foreach ($order->orderDetail as $detail) {
+            $line = ($detail->quantity ?? 1) . ' x ' . optional($detail->product)->name;
+            if (optionSummary($detail->options)) {
+                $line .= ' (' . optionSummary($detail->options) . ')';
+            }
+            $items[] = $line;
+        }
+
+        $address = $order->address;
+        if (is_string($address)) {
+            $address = json_decode($address, true) ?: [];
+        }
+
+        $shortCodes = [
+            'order_no'    => $order->order_no,
+            'user_name'   => optional($order->user)->username ?: 'Guest',
+            'method_name' => $order->payment_type == 1 ? 'Online payment' : 'Cash on delivery',
+            'total'       => showAmount($order->total),
+            'currency'    => $general->cur_sym,
+            'items'       => implode('<br>', $items),
+            'address'     => implode(', ', array_filter((array) $address, 'is_scalar')),
+        ];
+
+        $message = $template->email_body;
+        $subject = $template->subj;
+
+        foreach ($shortCodes as $code => $value) {
+            $message = shortCodeReplacer('{{' . $code . '}}', $value, $message);
+            $subject = shortCodeReplacer('{{' . $code . '}}', $value, $subject);
+        }
+
+        // sendGeneralEmail dispatches to whichever transport is configured
+        // (php/smtp/sendgrid/mailjet) with the correct argument order.
+        sendGeneralEmail($to, $subject, $message, 'Restaurant Admin');
+    } catch (\Throwable $e) {
+        // an order must never fail because the mail server is down
+        \Log::error('Admin new-order email failed: ' . $e->getMessage());
+    }
+}
+
+/**
+ * Ordering-availability config with safe defaults, so the storefront never
+ * breaks if the blob is missing a key.
+ */
+function orderConfig($key = null) {
+    static $cfg = null;
+    if ($cfg === null) {
+        $raw  = optional(GeneralSetting::first())->order_config ?: [];
+        $days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+        $hours = [];
+        foreach ($days as $d) {
+            $h = $raw['hours'][$d] ?? [];
+            $hours[$d] = [
+                'closed' => (int) ($h['closed'] ?? 0),
+                'open'   => $h['open']  ?? '09:00',
+                'close'  => $h['close'] ?? '22:00',
+            ];
+        }
+        $cfg = [
+            'accepting_orders'   => (int) ($raw['accepting_orders']   ?? 1),
+            'delivery_enabled'   => (int) ($raw['delivery_enabled']   ?? 1),
+            'collection_enabled' => (int) ($raw['collection_enabled'] ?? 1),
+            'hours'              => $hours,
+        ];
+    }
+    return $key === null ? $cfg : ($cfg[$key] ?? null);
+}
+
+/**
+ * Is the restaurant open for orders right now?
+ * Returns ['open' => bool, 'reason' => string, 'today' => array|null].
+ */
+function restaurantOpen() {
+    $cfg = orderConfig();
+
+    if (!$cfg['accepting_orders']) {
+        return ['open' => false, 'reason' => 'We are not accepting orders at the moment.', 'today' => null];
+    }
+
+    $now    = Carbon::now();
+    $dayKey = strtolower($now->format('D'));   // mon, tue, ...
+    $today  = $cfg['hours'][$dayKey] ?? null;
+
+    if (!$today || $today['closed']) {
+        return ['open' => false, 'reason' => 'We are closed today.', 'today' => $today];
+    }
+
+    try {
+        $open  = Carbon::createFromFormat('H:i', $today['open'])->setDateFrom($now);
+        $close = Carbon::createFromFormat('H:i', $today['close'])->setDateFrom($now);
+    } catch (\Throwable $e) {
+        return ['open' => true, 'reason' => '', 'today' => $today]; // malformed time -> fail open
+    }
+
+    // close time past midnight (e.g. 18:00 -> 02:00)
+    if ($close->lessThanOrEqualTo($open)) {
+        $close->addDay();
+    }
+
+    if ($now->between($open, $close)) {
+        return ['open' => true, 'reason' => '', 'today' => $today];
+    }
+
+    $msg = $now->lessThan($open)
+        ? 'We open today at ' . $open->format('g:i A') . '.'
+        : 'We are closed for today. Hours: ' . $open->format('g:i A') . ' – ' . $close->format('g:i A') . '.';
+
+    return ['open' => false, 'reason' => $msg, 'today' => $today];
+}

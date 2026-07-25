@@ -1,71 +1,40 @@
-@forelse($products as $product)
 @php
-$price = productPrice($product);
+    // Flag dishes with size/volume pricing so their card opens Quick View
+    // instead of blind-adding a default variant (same rule as the home menu).
+    $ids = $products->pluck('id')->all();
+    $variantIds = collect();
+    if (count($ids)) {
+        $variantIds = App\Models\ProductPricePerLiter::whereIn('product_id', $ids)->pluck('product_id')
+            ->merge(App\Models\ProductPricePerMilliliter::whereIn('product_id', $ids)->pluck('product_id'))
+            ->merge(App\Models\ProductPricePerVolume::whereIn('product_id', $ids)->pluck('product_id'))
+            // dishes carrying modifier groups must also pick options first.
+            // Only ACTIVE groups count — otherwise a dish attached solely to a
+            // disabled group shows "Choose" with nothing to choose.
+            ->merge(
+                DB::table('product_option_group')
+                    ->join('option_groups', 'option_groups.id', '=', 'product_option_group.option_group_id')
+                    ->whereIn('product_option_group.product_id', $ids)
+                    ->where('option_groups.status', 1)
+                    ->pluck('product_option_group.product_id')
+            )
+            ->unique();
+    }
 @endphp
-<div class="col-xl-3 col-md-4 col-sm-6">
-    <div class="product__item">
-        <div class="product__item-img">
-            <a href="{{ route('product.detail',['id'=>$product->id,'name'=>slug($product->slug)]) }}">
-                <img src="{{ getImage(imagePath()['product']['thumb']['path'].'/'. $product->image,imagePath()['product']['thumb']['size']) }}"
-                    alt="product">
-            </a>
-            @php
-                if($product->discount != 0 || $product->today_deals == 1){
-                    $discount = discountText($product,$general);
-                    echo $discount;
-                }
-            @endphp
-            <div class="product-right-btn">
-                <a href="#0" data-bs-toggle="modal" data-bs-target="#quickView" class="quickView"
-                data-product_id="{{ $product->id }}">
-                    <i class="las la-expand-arrows-alt"></i>
-                </a>
-                <a href="#0" data-product_id="{{ $product->id }}" class="add-wishlist">
-                    <i class="las la-heart"></i>
-                </a>
-            </div>
-        </div>
-        <div class="product__item-cont">
-            <h6 class="title">
-                <a href="{{ route('product.detail',['id'=>$product->id,'name'=>slug($product->slug)]) }}">
-                    {{__($product->name)}}
-                </a>
-            </h6>
-            @if ($general->display_stock == 1)
-            <span class="info {{ $product->quantity == 0 ? 'text--danger' : 'text--success' }}">
-                {{$product->quantity == 0 ? 'Out of Stock' : 'In Stock' }}
-            </span>
-            @endif
-            <div class="d-flex justify-content-between align-items-center @if ($general->display_stock != 1) mt-2 @endif">
-                <div class="ratings">
-                    @php
-                        $star = showProductRatings($product->avg_rate);
-                        echo $star;
-                    @endphp
-                </div>
 
-                <h6 class="m-0 price">
-                    {{ $general->cur_sym }}{{ showAmount($price) }}
-                    @if ($product->discount != 0)
-                    <del class="text--danger">{{ $general->cur_sym }}{{ showAmount($product->price) }}</del>
-                    @elseif($product->today_deals == 1)
-                    <del class="text--danger">{{ $general->cur_sym }}{{ showAmount($product->price) }}</del>
-                    @endif
-                </h6>
-            </div>
-            <div class="hover-cont-wrapper">
-                <div class="hover-cont-area">
-                    <a href="#0" class="cmn--btn cart-number-btn add-to-cart" data-product_id="{{ $product->id }}">
-                        @lang('Add To Cart')
-                    </a>
-                </div>
-            </div>
-        </div>
+@if ($products->count())
+    <div class="fd-plist">
+        @foreach ($products as $product)
+            @include($activeTemplate.'products.card', ['product' => $product, 'variantIds' => $variantIds])
+        @endforeach
     </div>
-</div>
-@empty
-<div class="col-xl-12 col-md-12 col-sm-12 text-center">
-    <strong class="text--danger">{{ __($emptyMessage) }}</strong>
-</div>
-@endforelse
-{{ $products->links() }}
+
+    @if ($products->hasPages())
+        <nav class="fd-pagination">{{ $products->links() }}</nav>
+    @endif
+@else
+    <div class="fd-plist-empty">
+        <i class="las la-utensils"></i>
+        <h5>{{ __($emptyMessage) }}</h5>
+        <p>@lang('Try removing a filter or widening your price range.')</p>
+    </div>
+@endif

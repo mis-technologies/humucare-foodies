@@ -149,20 +149,44 @@ class CheckoutController extends Controller {
 
     public function order(Request $request) {
 
+        // Refuse orders when the kitchen is shut / not accepting.
+        $availability = restaurantOpen();
+        if (!$availability['open']) {
+            $notify[] = ['error', $availability['reason'] ?: 'Sorry, we are not accepting orders right now.'];
+            return back()->withNotify($notify)->withInput();
+        }
 
-        $request->validate([
-            'firstname'       => 'required',
-            'lastname'        => 'required',
-            'mobile'          => 'required',
-            'email'           => 'required',
-            'country'         => 'required',
-            'address'         => 'required',
-            'state'           => 'required',
-            'city'            => 'required',
-            'zip'             => 'required',
-            'shipping_method' => 'required|integer',
-            'payment_type'    => 'required|integer|in:1,2',
-        ]);
+        // Delivery (needs an address + a courier) vs Collection (pickup, no fee).
+        $fulfilment = $request->fulfilment_type === 'collection' ? 'collection' : 'delivery';
+        $orderCfg   = orderConfig();
+        if ($fulfilment === 'delivery' && !$orderCfg['delivery_enabled']) {
+            $notify[] = ['error', 'Delivery is currently unavailable — please choose collection.'];
+            return back()->withNotify($notify)->withInput();
+        }
+        if ($fulfilment === 'collection' && !$orderCfg['collection_enabled']) {
+            $notify[] = ['error', 'Collection is currently unavailable — please choose delivery.'];
+            return back()->withNotify($notify)->withInput();
+        }
+
+        $rules = [
+            'firstname'    => 'required',
+            'lastname'     => 'required',
+            'mobile'       => 'required',
+            'email'        => 'required',
+            'payment_type' => 'required|integer|in:1,2',
+        ];
+        if ($fulfilment === 'delivery') {
+            // address + courier only matter when we're delivering
+            $rules += [
+                'country'         => 'required',
+                'address'         => 'required',
+                'state'           => 'required',
+                'city'            => 'required',
+                'zip'             => 'required',
+                'shipping_method' => 'required|integer',
+            ];
+        }
+        $request->validate($rules);
 
         if (Auth::check()) {
 
@@ -176,12 +200,21 @@ class CheckoutController extends Controller {
         }
 
 
-        $shipping   = ShippingMethod::where('id', $request->shipping_method)->where('status', 1)->first();
-        if(!$shipping){
-            $notify[] = ['error', 'Shipping method unable to locate.'];
-            return back()->withNotify($notify)->withInput();
+        // Collection has no courier and no delivery fee.
+        if ($fulfilment === 'delivery') {
+            $shipping = ShippingMethod::where('id', $request->shipping_method)->where('status', 1)->first();
+            if (!$shipping) {
+                $notify[] = ['error', 'Shipping method unable to locate.'];
+                return back()->withNotify($notify)->withInput();
+            }
+            $shippingPrice = $shipping->price;
+            $shippingId    = $shipping->id;
+        } else {
+            $shippingPrice = 0;
+            $shippingId    = 0;
         }
-        $grandTotal = $subtotal + $shipping->price;
+
+        $grandTotal = $subtotal + $shippingPrice;
 
         $total = session()->get('total');
 
@@ -194,34 +227,36 @@ class CheckoutController extends Controller {
 
         if ($request->has('hs_price')) {
 
-            $grandTotal = $request->hs_price + $shipping->price;
+            $grandTotal = $request->hs_price + $shippingPrice;
 
 
         }
         if (!Auth::check() && $request->has('price')) {
 
-            $grandTotal = $request->price + $shipping->price;
-        // dd($grandTotal);
+            $grandTotal = $request->price + $shippingPrice;
 
         }
 
-        $address = [
-            'address' => $request->address,
-            'state'   => $request->state,
-            'zip'     => $request->zip,
-            'country' => $request->country,
-            'city'    => $request->city,
-        ];
+        $address = $fulfilment === 'collection'
+            ? ['type' => 'collection']
+            : [
+                'address' => $request->address,
+                'state'   => $request->state,
+                'zip'     => $request->zip,
+                'country' => $request->country,
+                'city'    => $request->city,
+            ];
 
         $order                  = new Order();
         $order->user_id         = $user->id ?? 0;
         $order->order_no        = getTrx();
         $order->subtotal        = $subtotal;
         $order->discount        = $discount ?? 0;
-        $order->shipping_charge = $shipping->price;
+        $order->shipping_charge = $shippingPrice;
         $order->total           = $grandTotal;
         $order->coupon_id       = $coupon_id ?? 0;
-        $order->shipping_id     = $shipping->id;
+        $order->shipping_id     = $shippingId;
+        $order->fulfilment_type = $fulfilment;
         $order->address         = json_encode($address);
         $order->payment_type    = $request->payment_type;
 
@@ -245,13 +280,17 @@ class CheckoutController extends Controller {
 
                 $product = Product::active()->findOrFail($cart->product_id);
 
-                $price = productPrice($product);
+                // include the chosen modifiers in the recorded line price
+                $price = productPrice($product) + (float) ($cart->options_price ?? 0);
 
                 $orderDetail             = new OrderDetail();
                 $orderDetail->order_id   = $order->id;
                 $orderDetail->product_id = $cart->product_id;
                 $orderDetail->quantity   = $cart->quantity;
                 $orderDetail->price      = $price;
+                // snapshot the modifiers so the kitchen ticket stays accurate
+                // even if the menu is edited later
+                $orderDetail->options    = $cart->options ?? null;
                 $orderDetail->save();
 
                 $product->decrement('quantity', $cart->quantity);
@@ -268,17 +307,26 @@ class CheckoutController extends Controller {
         $adminNotification->click_url = urlPath('admin.orders.detail',$order->id);
         $adminNotification->save();
 
+        // Tell the restaurant a new order landed (the shipped code only ever
+        // notified the customer). Never lets a mail failure break the order.
+        notifyAdminNewOrder($order);
+
         if (Auth::check()) {
 
-            notify($user, 'ORDER_COMPLETE', [
-                'method_name'     => 'Order successfully done via Cash on delivery.',
-                'user_name'       => $user->username ?? 0,
-                'subtotal'        => showAmount($subtotal),
-                'shipping_charge' => showAmount($shipping->price),
-                'total'           => showAmount($grandTotal),
-                'currency'        => $general->cur_text,
-                'order_no'        => $order->order_no,
-            ]);
+            // A failing mail/SMS transport must not lose a paid order.
+            try {
+                notify($user, 'ORDER_COMPLETE', [
+                    'method_name'     => 'Order successfully done via Cash on delivery.',
+                    'user_name'       => $user->username ?? 0,
+                    'subtotal'        => showAmount($subtotal),
+                    'shipping_charge' => showAmount($shippingPrice),
+                    'total'           => showAmount($grandTotal),
+                    'currency'        => $general->cur_text,
+                    'order_no'        => $order->order_no,
+                ]);
+            } catch (\Throwable $e) {
+                \Log::error('Customer order email failed: ' . $e->getMessage());
+            }
         }
 
         $notify[] = ['success', 'Order successfully completed.'];
@@ -294,7 +342,9 @@ class CheckoutController extends Controller {
         foreach ($carts as $cart) {
             $sumPrice = 0;
             $product  = Product::active()->where('id', $cart->product->id)->first();
-            $price = productPrice($product);
+            // Include the chosen modifier surcharge so the amount charged matches
+            // what the cart shows and what the order-detail line records.
+            $price = productPrice($product) + (float) ($cart->options_price ?? 0);
 
             $sumPrice = $sumPrice + ($price * $cart->quantity);
             $total[]  = $sumPrice;

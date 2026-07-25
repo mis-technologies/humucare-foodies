@@ -144,6 +144,12 @@
                                     <a href="javascript:void(0)" class="text--dark">
                                         {{ __(@$detail->product->name) }}
                                     </a><br>
+                                    {{-- kitchen ticket: exactly what the customer chose --}}
+                                    @if (optionSummary(@$detail->options))
+                                        <span class="badge badge--warning" style="white-space:normal;text-align:left">
+                                            <i class="las la-utensils"></i> {{ optionSummary(@$detail->options) }}
+                                        </span><br>
+                                    @endif
                                     @if (@$detail->product->digital_item == 1)
                                         @if(@$detail->product->file_type == 1)
                                         <a href="{{ route('admin.product.digital.file.download', @$detail->product->id) }}" class="text--info">

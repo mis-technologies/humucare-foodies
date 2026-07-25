@@ -23,9 +23,17 @@
         type="image/x-icon">
     <link rel="stylesheet" href="{{ asset($activeTemplateTrue . 'css/color.php') }}?color={{ $general->base_color }}">
 
+    {{-- UI revamp: fonts + design layer (must load after color.php) --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
     @stack('style-lib')
 
     @stack('style')
+
+    <link rel="stylesheet" href="{{ asset($activeTemplateTrue.'css/revamp.css') }}?v=21">
+
 
     <style>
         .cmn--btnn {
@@ -140,13 +148,36 @@
 
 <body class="overflow-hidden">
 
-    <div class="preloader">
-        <div class="loader-bg">
-            <div class="loader-inner">
-                <span></span>
+    <div class="preloader fd-preloader">
+        <div class="fd-preloader__inner">
+            <div class="fd-preloader__ring">
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                    <circle class="fd-preloader__track" cx="60" cy="60" r="52"></circle>
+                    <circle class="fd-preloader__arc" cx="60" cy="60" r="52"></circle>
+                </svg>
+                <img class="fd-preloader__logo"
+                    src="{{ getImage(imagePath()['logoIcon']['path'] . '/foodie-logo.png') }}" alt="{{ __($general->sitename) }}">
             </div>
+            <div class="fd-preloader__bar"><span></span></div>
+            <p class="fd-preloader__text">@lang('Plating up your meals') <b>...</b></p>
         </div>
     </div>
+    <script>
+        // Safety net: main.js fades the preloader on load, but never let a slow
+        // asset or a JS error leave the site stuck behind a full-screen overlay.
+        (function () {
+            var hide = function () {
+                var p = document.querySelector('.fd-preloader');
+                if (!p) return;
+                p.style.transition = 'opacity .5s ease';
+                p.classList.add('fd-hidden');
+                setTimeout(function () { p.style.display = 'none'; }, 550);
+                document.body.classList.remove('overflow-hidden');
+            };
+            window.addEventListener('load', function () { setTimeout(hide, 400); });
+            setTimeout(hide, 6000);
+        })();
+    </script>
 
     @stack('fbComment')
 

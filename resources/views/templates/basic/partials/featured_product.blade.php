@@ -1,18 +1,18 @@
 @php
-$products = App\Models\Product::active()->where('featured_product',1)->latest()->with('reviews')->take(8)->get();
+    $products = App\Models\Product::active()->where('featured_product', 1)->latest()->with('reviews', 'category')->take(8)->get();
 @endphp
-<section class="latest-products-section pt-60 pb-60">
-    <div class="container">
-        <div class="section__header">
-            <h5 class="title">@lang('Featured Products')</h5>
-            <div class="view-all">
-                <a href="{{ route('featured.products') }}" class="view--all">@lang('Show All')</a>
-            </div>
+@if ($products->count() > 0)
+<section class="fd-section fd-section--tint">
+    <div class="fd-container">
+        <div class="fd-shead">
+            <h2 class="fd-shead__title">@lang('Featured Dishes')</h2>
         </div>
         <div class="row g-3 justify-content-center">
-            @if ($products->count() > 0)   
-                @include($activeTemplate.'products.display_products')
-            @endif
+            @include($activeTemplate.'products.display_products')
+        </div>
+        <div class="text-center mt-5">
+            <a href="{{ route('featured.products') }}" class="fd-btn fd-btn--lg fd-btn--ghost">@lang('View All') <i class="las la-arrow-right"></i></a>
         </div>
     </div>
 </section>
+@endif
