@@ -36,8 +36,16 @@ class AppServiceProvider extends ServiceProvider {
         // The app is not installed until its core tables exist. Without this
         // guard every artisan command (including `migrate` itself) crashes on
         // a fresh database, making the app impossible to install.
-        if (!\Illuminate\Support\Facades\Schema::hasTable('general_settings')
-            || !GeneralSetting::query()->exists()) {
+        //
+        // The try/catch also covers the DB being unreachable entirely — e.g.
+        // during `docker build` (composer's package:discover) or before the
+        // database container is up — so console commands never fatal.
+        try {
+            if (!\Illuminate\Support\Facades\Schema::hasTable('general_settings')
+                || !GeneralSetting::query()->exists()) {
+                return;
+            }
+        } catch (\Throwable $e) {
             return;
         }
 
