@@ -9,6 +9,9 @@ class OrderDetail extends Model {
     use HasFactory;
     protected $guarded = [];
 
+    /** modifier snapshot taken at order time (kitchen ticket) */
+    protected $casts = ['options' => 'array'];
+
     public function product(){
         return $this->belongsTo(Product::class,'product_id');
     }

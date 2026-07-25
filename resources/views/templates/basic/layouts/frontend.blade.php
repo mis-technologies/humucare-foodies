@@ -2,6 +2,16 @@
 @section('app')
 @include($activeTemplate.'partials.header')
 
+@php $fdOpen = restaurantOpen(); @endphp
+@unless ($fdOpen['open'])
+    <div class="fd-closed-bar">
+        <div class="fd-container">
+            <i class="las la-clock"></i>
+            <span>{{ $fdOpen['reason'] ?: __('We are currently closed and not taking orders.') }}</span>
+        </div>
+    </div>
+@endunless
+
 @include('sweetalert::alert')
 
 @yield('content')
@@ -80,11 +90,29 @@
                 price = 0;
             }
 
+            // Collect chosen modifiers from the open panel (Quick View / detail).
+            // The server re-validates these; this check is just fast feedback.
+            var $scope  = $(this).closest('.modal, .product-details-section, body');
+            var options = [];
+            var missing = null;
+            $scope.find('.fd-optgroup').each(function () {
+                var $g = $(this);
+                var picked = $g.find('.fd-opt__input:checked');
+                if ($g.data('required') == 1 && picked.length === 0 && missing === null) {
+                    missing = $g.data('name');
+                }
+                picked.each(function () { options.push($(this).val()); });
+            });
+            if (missing !== null) {
+                notify('error', 'Please choose an option for "' + missing + '".');
+                return;
+            }
+
             $.ajax({
                 headers: {"X-CSRF-TOKEN": "{{   csrf_token() }}",},
                 method: "POST",
                 url: "{{ route('add-to-cart') }}",
-                data: {product_id:product_id,quantity:quantity,volume:volume,price:price},
+                data: {product_id:product_id,quantity:quantity,volume:volume,price:price,options:options},
                 success: function (response) {
                     if(response.success) {
                         notify('success', response.success);

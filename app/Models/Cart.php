@@ -9,6 +9,9 @@ class Cart extends Model {
     use HasFactory;
     protected $guarded = [];
 
+    /** chosen modifiers: [{group, name, price}, ...] */
+    protected $casts = ['options' => 'array'];
+
     public function product() {
         return $this->belongsTo(Product::class, 'product_id');
     }

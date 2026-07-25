@@ -12,6 +12,24 @@ use Illuminate\Http\Request;
 
 class ManageOrderController extends Controller {
 
+    /**
+     * Lightweight poll target for the admin new-order alert.
+     * Returns the newest order id + a count of pending orders so the
+     * dashboard can chime when something arrives.
+     */
+    public function newOrderCheck(Request $request) {
+        $latest = Order::latest('id')->first();
+
+        return response()->json([
+            'latest_id'     => $latest->id ?? 0,
+            'order_no'      => $latest->order_no ?? null,
+            'total'         => $latest ? showAmount($latest->total) : null,
+            'currency'      => GeneralSetting::first()->cur_sym ?? '',
+            'pending_count' => Order::where('order_status', 0)->count(),
+            'detail_url'    => $latest ? route('admin.orders.detail', $latest->id) : null,
+        ]);
+    }
+
     public function allOrder(Request $request) {
         $pageTitle    = 'All Orders';
         $emptyMessage = 'No order found';

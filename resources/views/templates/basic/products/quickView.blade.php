@@ -55,6 +55,39 @@
             <p class="txt">
                 {{ __($product->summary) }}
             </p>
+            {{-- ---------------- modifiers ---------------- --}}
+            @php $optionGroups = $product->optionGroups()->with('options')->get(); @endphp
+            @if ($optionGroups->count())
+            <div class="fd-opts" data-base-price="{{ getAmount($price) }}">
+                @foreach ($optionGroups as $group)
+                    <div class="fd-optgroup" data-type="{{ $group->type }}" data-required="{{ $group->is_required }}"
+                        data-max="{{ $group->max_select }}" data-name="{{ __($group->name) }}">
+                        <div class="fd-optgroup__head">
+                            <span class="fd-optgroup__name">{{ __($group->name) }}</span>
+                            @if ($group->is_required)
+                                <span class="fd-optgroup__req">@lang('Required')</span>
+                            @elseif ($group->max_select > 1)
+                                <span class="fd-optgroup__hint">@lang('Choose up to') {{ $group->max_select }}</span>
+                            @endif
+                        </div>
+                        @foreach ($group->options as $opt)
+                            <label class="fd-opt">
+                                <input type="{{ $group->type == 'single' ? 'radio' : 'checkbox' }}"
+                                    name="optgroup_{{ $group->id }}{{ $group->type == 'single' ? '' : '[]' }}"
+                                    class="fd-opt__input" value="{{ $opt->id }}"
+                                    data-price="{{ getAmount($opt->price) }}">
+                                <span class="fd-opt__mark"></span>
+                                <span class="fd-opt__name">{{ __($opt->name) }}</span>
+                                @if ($opt->price > 0)
+                                    <span class="fd-opt__price">+{{ $general->cur_sym }}{{ showAmount($opt->price) }}</span>
+                                @endif
+                            </label>
+                        @endforeach
+                    </div>
+                @endforeach
+            </div>
+            @endif
+
             <div class="single-add-cart-area">
                 <div class="cart-plus-minus">
                     <div class="cart-decrease qtybutton dec">

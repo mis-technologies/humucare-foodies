@@ -189,7 +189,7 @@ class SiteController extends Controller {
         $pageTitle    = 'All Products';
         $emptyMessage = 'No product found';
 
-        $products = Product::active()->with('reviews');
+        $products = Product::active()->with('reviews', 'category');
 
         if ($request->route()->getName() == 'hot_deals.products') {
             $pageTitle = 'Hot Deal Products';
@@ -253,7 +253,7 @@ class SiteController extends Controller {
     //     $pageTitle    = 'All Products';
     //     $emptyMessage = 'No product found';
 
-    //     $products = Product::active()->with('reviews');
+    //     $products = Product::active()->with('reviews', 'category');
 
     //     if ($request->route()->getName() == 'hot_deals.products') {
     //         $pageTitle = 'Hot Deal Products';
@@ -314,7 +314,7 @@ class SiteController extends Controller {
 
     public function productsFilter(Request $request) {
 
-        $productList = Product::active()->with('reviews');
+        $productList = Product::active()->with('reviews', 'category');
 
         if ($request->route == 'hot_deals.products') {
             $productList = $productList->where('hot_deals', 1);
@@ -383,7 +383,7 @@ class SiteController extends Controller {
 
         $pageTitle    = $name . ' - Products';
         $emptyMessage = 'No product found';
-        $products     = Product::active()->with('reviews');
+        $products     = Product::active()->with('reviews', 'category');
         $categoryId    = 0;
         $subcategoryId = 0;
 
@@ -423,7 +423,7 @@ class SiteController extends Controller {
         $brandId      = $id;
         $pageTitle    = $name . ' - Products';
         $emptyMessage = 'No product found';
-        $products     = Product::active()->with('reviews')->where('brand_id', $brandId);
+        $products     = Product::active()->with('reviews', 'category')->where('brand_id', $brandId);
 
         $cloneProducts = clone $products;
         $minPrice      = $cloneProducts->min('price') ?? 0;
@@ -478,7 +478,7 @@ class SiteController extends Controller {
     }
 
     public function quickView(Request $request) {
-        $product = Product::active()->with('productGallery')->with('reviews')->findOrFail($request->product_id);
+        $product = Product::active()->with('productGallery')->with('reviews', 'category')->findOrFail($request->product_id);
         return view($this->activeTemplate . 'products.quickView', compact('product'));
     }
 
@@ -498,7 +498,7 @@ class SiteController extends Controller {
 
         $price_range = ProductPricePerVolume::where('product_id', $product->id)->get();
 
-        $topProducts = Product::active()->where('sale_count', '!=', 0)->orderBy('sale_count', 'desc')->latest()->with('reviews')->take(8)->get();
+        $topProducts = Product::active()->where('sale_count', '!=', 0)->orderBy('sale_count', 'desc')->latest()->with('reviews', 'category')->take(8)->get();
         $seoContents['image']               = getImage(imagePath()['product']['thumb']['path'] .'/'.$product->image, imagePath()['product']['thumb']['size']);
         $seoContents['image_size']          = imagePath()['product']['thumb']['size'];
 

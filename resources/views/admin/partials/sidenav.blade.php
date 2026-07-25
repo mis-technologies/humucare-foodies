@@ -79,12 +79,14 @@
                                 </a>
                             </li>
 
+                            {{-- HIDDEN (restaurant has no customer wallet). Route kept; re-enable if needed.
                             <li class="sidebar-menu-item {{ menuActive('admin.users.with.balance') }}">
                                 <a href="{{ route('admin.users.with.balance') }}" class="nav-link">
                                     <i class="menu-icon las la-dot-circle"></i>
                                     <span class="menu-title">@lang('With Balance')</span>
                                 </a>
                             </li>
+                            --}}
 
 
                             <li class="sidebar-menu-item {{ menuActive('admin.users.email.all') }}">
@@ -114,6 +116,16 @@
                     </a>
                 </li>
 
+                <li class="sidebar-menu-item  {{ menuActive('admin.optiongroup*') }}">
+                    <a href="{{ route('admin.optiongroup.index') }}" class="nav-link"
+                        data-default-url="{{ route('admin.optiongroup.index') }}">
+                        <i class="menu-icon las la-sliders-h"></i>
+                        <span class="menu-title">@lang('Item Modifiers') </span>
+                    </a>
+                </li>
+
+                {{-- HIDDEN: a restaurant has no "brands". Route/controller kept and a
+                     default brand remains, because Product::scopeActive() requires one.
                 <li class="sidebar-menu-item  {{ menuActive('admin.brand*') }}">
                     <a href="{{ route('admin.brand.index') }}" class="nav-link"
                         data-default-url="{{ route('admin.brand.index') }}">
@@ -121,6 +133,7 @@
                         <span class="menu-title">@lang('Brands') </span>
                     </a>
                 </li>
+                --}}
 
                 <li class="sidebar-menu-item sidebar-dropdown">
                     <a href="javascript:void(0)" class="{{ menuActive('admin.product*', 3) }}">
@@ -153,11 +166,19 @@
                     </a>
                 </li>
 
+                <li class="sidebar-menu-item  {{ menuActive('admin.ordering.index') }}">
+                    <a href="{{ route('admin.ordering.index') }}" class="nav-link"
+                        data-default-url="{{ route('admin.ordering.index') }}">
+                        <i class="menu-icon las la-clock"></i>
+                        <span class="menu-title">@lang('Ordering & Hours') </span>
+                    </a>
+                </li>
+
                 <li class="sidebar-menu-item  {{ menuActive('admin.shipping.index') }}">
                     <a href="{{ route('admin.shipping.index') }}" class="nav-link"
                         data-default-url="{{ route('admin.shipping.index') }}">
                         <i class="menu-icon las la-truck-moving"></i>
-                        <span class="menu-title">@lang('Shipping Method') </span>
+                        <span class="menu-title">@lang('Delivery Fees') </span>
                     </a>
                 </li>
 
@@ -215,6 +236,11 @@
                         </ul>
                     </div>
                 </li>
+                {{-- HIDDEN: "Payments" here manages WALLET DEPOSITS (customer top-ups),
+                     which a restaurant does not use. Online ORDER payments still appear
+                     under Manage Orders. Routes/controllers kept intact because the online
+                     card-payment flow (payment_type==1 -> user.deposit) depends on them.
+                     Re-enable this block only if you offer manual/bank-transfer gateways.
                 <li class="sidebar-menu-item sidebar-dropdown">
                     <a href="javascript:void(0)" class="{{ menuActive('admin.deposit*', 3) }}">
                         <i class="menu-icon las la-wallet"></i>
@@ -269,6 +295,7 @@
                         </ul>
                     </div>
                 </li>
+                --}}
 
                 <li class="sidebar-menu-item sidebar-dropdown">
                     <a href="javascript:void(0)" class="{{ menuActive('admin.gateway*', 3) }}">
@@ -346,6 +373,7 @@
                     </a>
                     <div class="sidebar-submenu {{ menuActive('admin.report*', 2) }} ">
                         <ul>
+                            {{-- HIDDEN: wallet transaction log (no customer wallet in a restaurant).
                             <li
                                 class="sidebar-menu-item {{ menuActive(['admin.report.transaction', 'admin.report.transaction.search']) }}">
                                 <a href="{{ route('admin.report.transaction') }}" class="nav-link">
@@ -353,6 +381,7 @@
                                     <span class="menu-title">@lang('Transaction Log')</span>
                                 </a>
                             </li>
+                            --}}
 
                             <li
                                 class="sidebar-menu-item {{ menuActive(['admin.report.login.history', 'admin.report.login.ipHistory']) }}">
@@ -374,6 +403,7 @@
                 </li>
 
 
+                {{-- HIDDEN: newsletter subscribers, not needed for the restaurant. Route kept.
                 <li class="sidebar-menu-item  {{ menuActive('admin.subscriber.index') }}">
                     <a href="{{ route('admin.subscriber.index') }}" class="nav-link"
                         data-default-url="{{ route('admin.subscriber.index') }}">
@@ -381,6 +411,7 @@
                         <span class="menu-title">@lang('Subscribers') </span>
                     </a>
                 </li>
+                --}}
 
 
                 <li class="sidebar__menu-header">@lang('Settings')</li>
@@ -399,12 +430,14 @@
                     </a>
                 </li>
 
+                {{-- HIDDEN: third-party script extensions (analytics/chat/captcha). Route kept.
                 <li class="sidebar-menu-item {{ menuActive('admin.extensions.index') }}">
                     <a href="{{ route('admin.extensions.index') }}" class="nav-link">
                         <i class="menu-icon las la-cogs"></i>
                         <span class="menu-title">@lang('Extensions')</span>
                     </a>
                 </li>
+                --}}
 
                 <li class="sidebar-menu-item  {{ menuActive(['admin.language.manage', 'admin.language.key']) }}">
                     <a href="{{ route('admin.language.manage') }}" class="nav-link"
@@ -453,6 +486,7 @@
                     </div>
                 </li>
 
+                {{-- HIDDEN: SMS gateway/templates. Not used (no SMS provider configured). Routes kept.
                 <li class="sidebar-menu-item sidebar-dropdown">
                     <a href="javascript:void(0)" class="{{menuActive('admin.sms.template*',3)}}">
                         <i class="menu-icon la la-mobile"></i>
@@ -481,6 +515,7 @@
                         </ul>
                     </div>
                 </li>
+                --}}
 
 
                 <li class="sidebar__menu-header">@lang('Frontend Manager')</li>
@@ -550,6 +585,7 @@
                     </a>
                 </li>
 
+                {{-- HIDDEN: pings the ViserLab license server; irrelevant to running the restaurant.
                 <li class="sidebar-menu-item  {{ menuActive('admin.request.report') }}">
                     <a href="{{ route('admin.request.report') }}" class="nav-link"
                         data-default-url="{{ route('admin.request.report') }}">
@@ -557,7 +593,8 @@
                         <span class="menu-title">@lang('Report & Request') </span>
                     </a>
                 </li>
-                
+                --}}
+
             </ul>
             <div class="text-center mb-3 text-uppercase">
                 <span class="text--primary">{{ __(systemDetails()['name']) }}</span>

@@ -1,106 +1,87 @@
 @php
-$footerAddress = getContent('contact_us.content',true);
-$paymentOption = getContent('footer.element',false,null,true);
-$footerContent = getContent('footer.content',true);
-$socialIcons = getContent('social_icon.element',false,null,true);
-$categoryList = App\Models\Category::where('status',1)->with('subcategories')->latest()->limit(6)->get();
-$policyPages = getContent('policy_pages.element', false, null, true);
+    $footerAddress = getContent('contact_us.content', true);
+    $paymentOption = getContent('footer.element', false, null, true);
+    $footerContent = getContent('footer.content', true);
+    $socialIcons = getContent('social_icon.element', false, null, true);
+    $categoryList = App\Models\Category::where('status', 1)->with('subcategories')->latest()->limit(6)->get();
+    $policyPages = getContent('policy_pages.element', false, null, true);
 @endphp
+
 @include($activeTemplate.'partials.footer.footer_top')
 
-<footer>
+<footer class="fd-footer">
+    <div class="fd-container fd-footer__main">
+        <div class="fd-footer__brand">
+            <img src="{{ getImage(imagePath()['logoIcon']['path'] . '/foodie-logo.png') }}" alt="{{ __($general->sitename) }}">
+            <p>@lang('Freshly cooked, chef-made meals delivered to your door. Enjoy your online food shopping with') {{ __($general->sitename) }}.</p>
+            @if ($socialIcons && count($socialIcons) > 0)
+            <ul class="social-icons">
+                @foreach ($socialIcons as $social)
+                    <li><a href="{{ @$social->data_values->url }}">@php echo $social->data_values->social_icon @endphp</a></li>
+                @endforeach
+            </ul>
+            @endif
+        </div>
 
-    <div style="position: fixed; bottom: 20px; left: 20px; z-index: 999;">
+        @if ($categoryList->count() > 0)
+        <div>
+            <h6 class="fd-footer__title">@lang('Menu')</h6>
+            <ul class="fd-footer__links">
+                @foreach ($categoryList->take(5) as $category)
+                    <li><a href="{{ route('category.products', ['id' => $category->id, 'name' => slug($category->name)]) }}">{{ __($category->name) }}</a></li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
 
+        <div>
+            <h6 class="fd-footer__title">@lang('Company')</h6>
+            <ul class="fd-footer__links">
+                <li><a href="{{ route('contact') }}">@lang('Contact Us')</a></li>
+                <li><a href="{{ route('track-order') }}">@lang('Track Order')</a></li>
+                <li><a href="{{ route('wishlist') }}">@lang('My Wishlist')</a></li>
+                @foreach ($policyPages as $policy)
+                    <li><a href="{{ route('page.details', [$policy->id, slug($policy->data_values->title)]) }}">{{ __(@$policy->data_values->title) }}</a></li>
+                @endforeach
+            </ul>
+        </div>
 
-        <a href="tel:+44 7485 705519"
-        style="
-         height: 50px;
-         padding: 10px;
-         background-color: #F5c10C;
-         border-radius: 20px;"
-        class="text-white">
-            @lang('Call For Party Services')  <i class="fa fa-phone"></i>
-        </a>
-     </div>
-    @if ($categoryList->count() > 0)
-    <div class="footer-top">
-        <div class="container">
-            <div class="footer__wrapper">
-                @foreach ($categoryList as $category)
-                <div class="footer__widget">
-                    <h6 class="title">{{ __($category->name) }}</h6>
-                    <ul>
-                        @foreach ($category->subcategories->take(4) as $subcategory)
-                        <li>
-                            <a href="{{ route('subcategory.products',['id'=>$subcategory->id,'name'=>slug($subcategory->name)]) }}">
-                                {{ __($subcategory->name) }}
-                            </a>
-                        </li>
-                        @endforeach
-                    </ul>
+        <div>
+            <h6 class="fd-footer__title">@lang('Subscribe Newsletter')</h6>
+            <p style="font-size:14px;margin-bottom:14px">{{ __(@$footerContent->data_values->subscribe_title) }}</p>
+            <form class="newletter-form">
+                <div class="input-group">
+                    <input type="text" class="form-control subscribe-email" placeholder="@lang('Enter Your Email')" required>
+                    <button type="submit" class="cmn--btn subscribe-btn"><i class="las la-paper-plane"></i></button>
                 </div>
+            </form>
+            @if (@$footerAddress->data_values->address)
+            <p style="font-size:13px;margin-top:18px;color:rgba(255,255,255,.55)">
+                <i class="las la-map-marker-alt"></i> {{ __(@$footerAddress->data_values->address) }}
+            </p>
+            @endif
+            @if ($paymentOption && count($paymentOption) > 0)
+            <div class="d-flex flex-wrap mt-3">
+                @foreach ($paymentOption as $payment)
+                    <div class="pay-img"><img src="{{ getImage('assets/images/frontend/footer/' . @$payment->data_values->image, '70x40') }}" alt="payment"></div>
+                @endforeach
+            </div>
+            @endif
+        </div>
+    </div>
+
+    <div class="fd-container">
+        <div class="fd-footer__bottom">
+            <div>@lang('Copyright') &copy; @lang('All Rights Reserved by') <a href="{{ route('home') }}">{{ __($general->sitename) }}</a></div>
+            <div class="policy-page">
+                @foreach ($policyPages as $policy)
+                    <a href="{{ route('page.details', [$policy->id, slug($policy->data_values->title)]) }}">{{ __(@$policy->data_values->title) }}{{ $loop->last ? '' : ' ·' }}</a>
                 @endforeach
             </div>
         </div>
     </div>
-    @endif
-    <div class="container">
-        <div class="footer-bottom">
-            <div class="footer__wrapper">
-                <div class="footer__bottom__widget">
-                    <h6 class="title">@lang('Our Address')</h6>
-                    <p>{{ __(@$footerAddress->data_values->address) }}</p>
-                </div>
-                <div class="footer__bottom__widget">
-                    <h6 class="title">@lang('Payment Methods')</h6>
-                    <div class="d-flex flex-wrap">
-                        @foreach ($paymentOption as $payment)
-                        <div class="pay-img">
-                            <img src="{{ getImage('assets/images/frontend/footer/'.@$payment->data_values->image,'70x40') }}" alt="payment">
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-                <div class="footer__bottom__widget">
-                    <h6 class="title">@lang('Subscribe Newsletter')</h6>
-                    <p class="mb-4">{{ __(@$footerContent->data_values->subscribe_title) }}</p>
-                    <form class="newletter-form">
-                        <div class="input-group">
-                            <input type="text" class="form-control subscribe-email" placeholder="@lang('Enter Your Email')" required>
-                            <button type="submit" class="cmn--btn subscribe-btn"><i class="las la-paper-plane"></i></button>
-                        </div>
-                    </form>
-                </div>
-                <div class="footer__bottom__widget">
-                    <h6 class="title">@lang('Connect With')</h6>
-                    <p class="mb-3">{{ __(@$footerContent->data_values->connect_title) }}</p>
-                    <ul class="social-icons justify-content-start">
-                        @foreach ($socialIcons as $social)
-                        <li>
-                            <a href="{{ @$social->data_values->url }}">
-                                @php echo $social->data_values->social_icon @endphp
-                            </a>
-                        </li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="bg--dark">
-        <div class="container">
-            <div class="copyright-area justify-content-beetween">
-                <div class="copyright">
-                    @lang('Copyright') &copy; @lang('All Right Reserved by')
-                    <a href="{{ route('home') }}" class="text--base">{{__($general->sitename)}}</a>
-                </div>
-                <div class="policy-page">
-                    @foreach ($policyPages as $policy)
-                        <a href="{{ route('page.details', [$policy->id, slug($policy->data_values->title)]) }}" class="text-white">{{ __(@$policy->data_values->title) }}{{ $loop->last ? '' : ',' }}</a>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-    </div>
 </footer>
+
+<a href="tel:+44 7485 705519" class="fd-call-fab">
+    <i class="las la-phone"></i> @lang('Call for Party Services')
+</a>

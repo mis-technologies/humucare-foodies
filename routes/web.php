@@ -127,6 +127,22 @@ Route::namespace ('Admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/payment/success', 'ManageUsersController@paymentSuccess')->name('payment.successful');
 
         // Brand
+        // ordering controls: accepting-orders switch, opening hours, delivery/collection
+        Route::controller('OrderSettingController')->prefix('ordering')->name('ordering.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/update', 'update')->name('update');
+        });
+
+        // item modifiers (sizes, extras, add-ons)
+        Route::prefix('option-group')->name('optiongroup.')->group(function () {
+            Route::get('/', 'OptionGroupController@index')->name('index');
+            Route::post('/store/{id?}', 'OptionGroupController@store')->name('store');
+            Route::post('/status/{id}', 'OptionGroupController@status')->name('status');
+            Route::post('/option/store/{id?}', 'OptionGroupController@optionStore')->name('option.store');
+            Route::post('/option/delete/{id}', 'OptionGroupController@optionDelete')->name('option.delete');
+            Route::post('/assign/{id}', 'OptionGroupController@assign')->name('assign');
+        });
+
         Route::prefix('brand')->name('brand.')->group(function () {
             Route::get('/index', 'BrandController@index')->name('index');
             Route::post('/store/{id?}', 'BrandController@store')->name('store');
@@ -201,6 +217,8 @@ Route::namespace ('Admin')->prefix('admin')->name('admin.')->group(function () {
         });
 
         Route::name('orders.')->prefix('orders')->group(function () {
+            // polled by the admin layout to chime on new orders
+            Route::get('/new-check', 'ManageOrderController@newOrderCheck')->name('new.check');
             Route::get('/all', 'ManageOrderController@allOrder')->name('all');
             Route::get('/pending', 'ManageOrderController@pendingOrder')->name('pending');
             Route::get('/confirmed', 'ManageOrderController@confirmOrder')->name('confirmed');

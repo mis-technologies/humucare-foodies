@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Deposit;
 use App\Models\Gateway;
 use App\Models\GeneralSetting;
+use App\Models\AdminNotification;
+use App\Models\Cart;
 use App\Models\Order;
+use App\Models\OrderDetail;
 use App\Models\Product;
 use App\Models\User;
 use Carbon\Carbon;
@@ -193,6 +196,35 @@ class DepositController extends Controller {
         $order->save();
 
         $general = GeneralSetting::first();
+
+        // The order was created without items (details are added on payment).
+        // Manual approval previously skipped this, leaving a paid but empty
+        // order — build the items now, snapshotting modifiers + surcharge.
+        if ($order->orderDetail()->count() == 0 && $deposit->user_id != 0) {
+            $carts = Cart::where('user_id', $deposit->user_id)->get();
+            foreach ($carts as $cart) {
+                $product = Product::active()->find($cart->product_id);
+                if (!$product) { continue; }
+
+                $orderDetail             = new OrderDetail();
+                $orderDetail->order_id   = $order->id;
+                $orderDetail->product_id = $cart->product_id;
+                $orderDetail->quantity   = $cart->quantity;
+                $orderDetail->price      = productPrice($product) + (float) ($cart->options_price ?? 0);
+                $orderDetail->options    = $cart->options ?? null;
+                $orderDetail->save();
+
+                $product->decrement('quantity', $cart->quantity);
+                $cart->delete();
+            }
+
+            $adminNotification            = new AdminNotification();
+            $adminNotification->user_id   = $deposit->user_id;
+            $adminNotification->title     = 'Bank transfer approved for order ' . $order->order_no;
+            $adminNotification->click_url = urlPath('admin.orders.detail', $order->id);
+            $adminNotification->save();
+        }
+
         if ($deposit->user_id != 0) {
 
             notify($user, 'PAYMENT_APPROVE', [
