@@ -33,6 +33,15 @@ class AppServiceProvider extends ServiceProvider {
      */
     public function boot() {
 
+        // Force HTTPS URL generation when the site's canonical URL is https.
+        // This runs BEFORE the install guard and does NOT depend on the proxy
+        // sending X-Forwarded-Proto, so asset()/route()/url()/form actions never
+        // emit http:// links that browsers block as mixed content on an HTTPS
+        // site. Set APP_URL=https://your-domain in .env to activate.
+        if (str_starts_with((string) config('app.url'), 'https://')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         // The app is not installed until its core tables exist. Without this
         // guard every artisan command (including `migrate` itself) crashes on
         // a fresh database, making the app impossible to install.
