@@ -33,6 +33,25 @@ class AppServiceProvider extends ServiceProvider {
      */
     public function boot() {
 
+        // Force HTTPS URL generation so asset()/route()/url()/form actions never
+        // emit http:// links that browsers block as mixed content on an HTTPS
+        // site. ZERO-CONFIG and proxy-independent: it keys off the actual
+        // request host (what asset() uses), not APP_URL and not
+        // X-Forwarded-Proto. Only genuine local hosts stay on http.
+        if (!app()->runningInConsole()) {
+            $host      = request()->getHost();
+            $appUrl    = (string) config('app.url');
+            $looksLocal = str_contains($host, 'localhost')
+                || str_contains($host, '127.0.0.1')
+                || str_ends_with($host, '.test')
+                || str_ends_with($host, '.local');
+
+            if (str_starts_with($appUrl, 'https://') || !$looksLocal) {
+                \Illuminate\Support\Facades\URL::forceScheme('https');
+                $this->app['request']->server->set('HTTPS', 'on');
+            }
+        }
+
         // The app is not installed until its core tables exist. Without this
         // guard every artisan command (including `migrate` itself) crashes on
         // a fresh database, making the app impossible to install.

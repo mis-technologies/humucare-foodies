@@ -1,0 +1,51 @@
+# Full stack: the Foodies app + MySQL.
+#   docker compose up -d --build
+#   open http://localhost:8090
+#
+# The app reads secrets from .env (env_file below); DB_* are overridden here so
+# the app talks to the `db` service instead of 127.0.0.1.
+#
+# First run: the SQL sample is auto-imported into the db, so the site has data
+# immediately. (Alternatively leave it out and set RUN_SEEDERS=true once.)
+
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: foodies
+      MYSQL_ROOT_PASSWORD: secret
+    volumes:
+      - dbdata:/var/lib/mysql
+      # auto-imported ONLY when the data volume is empty (first boot)
+      - ./database/foodies-install.sql:/docker-entrypoint-initdb.d/01-foodies.sql:ro
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-psecret"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: foodies
+      DB_USERNAME: root
+      DB_PASSWORD: secret
+      # data is imported via the SQL file, so don't run the destructive seeder
+      RUN_SEEDERS: "false"
+    ports:
+      - "8090:80"
+
+volumes:
+  dbdata:

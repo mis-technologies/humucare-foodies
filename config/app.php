@@ -1,5 +1,16 @@
 <?php
-require_once('timezone.php');
+// The admin panel rewrites config/timezone.php whenever the timezone setting
+// changes, so the value stays in an included file rather than inline here.
+//
+// Use `require` (not `require_once`) with an absolute path: `artisan
+// config:cache` and `route:cache` bootstrap a *second* application in the same
+// PHP process, and require_once would be a no-op that second time — leaving
+// $timezone undefined and failing the cache. The is_file() guard keeps a fresh
+// checkout (or a container where the file was never written) bootable.
+$timezone = 'UTC';
+if (is_file(__DIR__ . '/timezone.php')) {
+    require __DIR__ . '/timezone.php';
+}
 return [
 
     /*
