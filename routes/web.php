@@ -58,7 +58,10 @@ Route::prefix('ticket')->group(function () {
 Route::namespace ('Admin')->prefix('admin')->name('admin.')->group(function () {
     Route::namespace ('Auth')->group(function () {
         Route::get('/', 'LoginController@showLoginForm')->name('login');
-        Route::post('/', 'LoginController@login')->name('login');
+        // Deliberately unnamed: it shares the URI with the GET above, so
+        // route('admin.login') already resolves to it for the form action, and a
+        // duplicate route name makes `artisan route:cache` fail outright.
+        Route::post('/', 'LoginController@login');
         Route::get('logout', 'LoginController@logout')->name('logout');
         // Admin Password Reset
         Route::get('password/reset', 'ForgotPasswordController@showLinkRequestForm')->name('password.reset');
@@ -102,7 +105,7 @@ Route::namespace ('Admin')->prefix('admin')->name('admin.')->group(function () {
         Route::post('customer/update/{id}', 'ManageUsersController@update')->name('users.update');
         Route::post('customer/add-sub-balance/{id}', 'ManageUsersController@addSubBalance')->name('users.add.sub.balance');
         Route::get('customer/send-email/{id}', 'ManageUsersController@showEmailSingleForm')->name('users.email.single');
-        Route::post('customer/send-email/{id}', 'ManageUsersController@sendEmailSingle')->name('users.email.single');
+        Route::post('customer/send-email/{id}', 'ManageUsersController@sendEmailSingle');
         Route::get('customer/login/{id}', 'ManageUsersController@login')->name('users.login');
         Route::get('customer/transactions/{id}', 'ManageUsersController@transactions')->name('users.transactions');
         Route::get('customer/deposits/{id}', 'ManageUsersController@deposits')->name('users.deposits');
@@ -121,7 +124,7 @@ Route::namespace ('Admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('subscriber', 'SubscriberController@index')->name('subscriber.index');
         Route::get('subscriber/send-email', 'SubscriberController@sendEmailForm')->name('subscriber.sendEmail');
         Route::post('subscriber/remove', 'SubscriberController@remove')->name('subscriber.remove');
-        Route::post('subscriber/send-email', 'SubscriberController@sendEmail')->name('subscriber.sendEmail');
+        Route::post('subscriber/send-email', 'SubscriberController@sendEmail');
 
         // Payment
         Route::get('/payment/success', 'ManageUsersController@paymentSuccess')->name('payment.successful');
@@ -295,7 +298,7 @@ Route::namespace ('Admin')->prefix('admin')->name('admin.')->group(function () {
 
         // Logo-Icon
         Route::get('setting/logo-icon', 'GeneralSettingController@logoIcon')->name('setting.logo.icon');
-        Route::post('setting/logo-icon', 'GeneralSettingController@logoIconUpdate')->name('setting.logo.icon');
+        Route::post('setting/logo-icon', 'GeneralSettingController@logoIconUpdate');
 
         //Custom CSS
         Route::get('custom-css', 'GeneralSettingController@customCss')->name('setting.custom.css');
@@ -313,9 +316,9 @@ Route::namespace ('Admin')->prefix('admin')->name('admin.')->group(function () {
 
         // Email Setting
         Route::get('email-template/global', 'EmailTemplateController@emailTemplate')->name('email.template.global');
-        Route::post('email-template/global', 'EmailTemplateController@emailTemplateUpdate')->name('email.template.global');
+        Route::post('email-template/global', 'EmailTemplateController@emailTemplateUpdate');
         Route::get('email-template/setting', 'EmailTemplateController@emailSetting')->name('email.template.setting');
-        Route::post('email-template/setting', 'EmailTemplateController@emailSettingUpdate')->name('email.template.setting');
+        Route::post('email-template/setting', 'EmailTemplateController@emailSettingUpdate');
         Route::get('email-template/index', 'EmailTemplateController@index')->name('email.template.index');
         Route::get('email-template/{id}/edit', 'EmailTemplateController@edit')->name('email.template.edit');
         Route::post('email-template/{id}/update', 'EmailTemplateController@update')->name('email.template.update');
@@ -323,7 +326,7 @@ Route::namespace ('Admin')->prefix('admin')->name('admin.')->group(function () {
 
         // SMS Setting
         Route::get('sms-template/global', 'SmsTemplateController@smsTemplate')->name('sms.template.global');
-        Route::post('sms-template/global', 'SmsTemplateController@smsTemplateUpdate')->name('sms.template.global');
+        Route::post('sms-template/global', 'SmsTemplateController@smsTemplateUpdate');
         Route::get('sms-template/setting', 'SmsTemplateController@smsSetting')->name('sms.templates.setting');
         Route::post('sms-template/setting', 'SmsTemplateController@smsSettingUpdate')->name('sms.template.setting');
         Route::get('sms-template/index', 'SmsTemplateController@index')->name('sms.template.index');

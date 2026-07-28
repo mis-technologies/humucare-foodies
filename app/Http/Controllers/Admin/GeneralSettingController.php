@@ -41,9 +41,17 @@ class GeneralSettingController extends Controller {
         $general->base_color      = $request->base_color;
         $general->save();
 
-        $timezoneFile = config_path('timezone.php');
-        $content      = '<?php $timezone = ' . $request->timezone . ' ?>';
-        file_put_contents($timezoneFile, $content);
+        // This value is written into a PHP file that config/app.php includes, so
+        // it must never be interpolated raw. The form posts it already wrapped in
+        // quotes; strip those, check it against PHP's own timezone list, and emit
+        // it with var_export so only a valid identifier can ever reach disk.
+        $timezone = trim($request->timezone, "'\" ");
+        if (in_array($timezone, timezone_identifiers_list(), true)) {
+            file_put_contents(
+                config_path('timezone.php'),
+                '<?php $timezone = ' . var_export($timezone, true) . ';' . PHP_EOL
+            );
+        }
         $notify[] = ['success', 'General setting has been updated.'];
         return back()->withNotify($notify);
     }
