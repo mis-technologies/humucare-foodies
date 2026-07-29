@@ -75,8 +75,7 @@ class SpecialRequestController extends Controller
         $notification->click_url = urlPath('admin.special.request.index');
         $notification->save();
 
-        $general = GeneralSetting::first();
-        sendSpecialRequestEmail(trim($general->email_from ?? ''), 'ADMIN_SPECIAL_REQUEST', $req);
+        sendSpecialRequestEmail(adminNotifyAddress(), 'ADMIN_SPECIAL_REQUEST', $req);
         sendSpecialRequestEmail($req->email, 'SPECIAL_REQUEST_RECEIVED', $req);
 
         $message = 'Thanks! Your request reference is ' . $req->request_no . '. We will contact you shortly with a price.';

@@ -109,6 +109,21 @@
         }
         
     },
+    "special_request": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Special Request Cards",
+        "element": {
+            "images": {
+                "image": {
+                    "size": "160x160"
+                }
+            },
+            "title": "text",
+            "short_detail": "text",
+            "modal": true
+        }
+    },
     "contact_us": {
         "builder": true,
         "no_selection": true,

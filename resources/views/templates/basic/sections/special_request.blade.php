@@ -1,5 +1,11 @@
 {{-- "Need something bigger?" — bulk portions and party catering are quotes,
      not menu items, so this collects an enquiry instead of adding to the cart. --}}
+@php
+    // Cards are managed in Admin > Frontend Manager > "Special Request Cards",
+    // so the restaurant can use its own dish photos. The emoji list below is
+    // only a fallback for a fresh install with nothing configured yet.
+    $reqCards = getContent('special_request.element', false, null, true);
+@endphp
 <section class="fd-section fd-req-cta">
     <div class="fd-container">
         <div class="fd-req-cta__inner">
@@ -27,22 +33,36 @@
                 </div>
             </div>
 
-            <div class="fd-req-cta__cards" aria-hidden="true">
-                <div class="fd-req-cta__card">
-                    <span class="fd-req-cta__emoji">🍲</span>
-                    <strong>@lang('1 litre of soup')</strong>
-                    <small>@lang('Egusi, Okra, Pepper soup')</small>
-                </div>
-                <div class="fd-req-cta__card fd-req-cta__card--lift">
-                    <span class="fd-req-cta__emoji">🍚</span>
-                    <strong>@lang('A tray of Jollof')</strong>
-                    <small>@lang('Serves 20–50 guests')</small>
-                </div>
-                <div class="fd-req-cta__card">
-                    <span class="fd-req-cta__emoji">🎉</span>
-                    <strong>@lang('Full party menu')</strong>
-                    <small>@lang('Built around your budget')</small>
-                </div>
+            <div class="fd-req-cta__cards">
+                @if ($reqCards && count($reqCards) > 0)
+                    @foreach ($reqCards->take(3) as $i => $card)
+                        {{-- middle card is the highlighted one, matching the fallback --}}
+                        <div class="fd-req-cta__card @if ($i == 1) fd-req-cta__card--lift @endif">
+                            <span class="fd-req-cta__ic">
+                                <img src="{{ getImage('assets/images/frontend/special_request/' . @$card->data_values->image, '160x160') }}"
+                                    alt="{{ __(@$card->data_values->title) }}">
+                            </span>
+                            <strong>{{ __(@$card->data_values->title) }}</strong>
+                            <small>{{ __(@$card->data_values->short_detail) }}</small>
+                        </div>
+                    @endforeach
+                @else
+                    <div class="fd-req-cta__card">
+                        <span class="fd-req-cta__emoji">🍲</span>
+                        <strong>@lang('1 litre of soup')</strong>
+                        <small>@lang('Egusi, Okra, Pepper soup')</small>
+                    </div>
+                    <div class="fd-req-cta__card fd-req-cta__card--lift">
+                        <span class="fd-req-cta__emoji">🍚</span>
+                        <strong>@lang('A tray of Jollof')</strong>
+                        <small>@lang('Serves 20–50 guests')</small>
+                    </div>
+                    <div class="fd-req-cta__card">
+                        <span class="fd-req-cta__emoji">🎉</span>
+                        <strong>@lang('Full party menu')</strong>
+                        <small>@lang('Built around your budget')</small>
+                    </div>
+                @endif
             </div>
         </div>
     </div>

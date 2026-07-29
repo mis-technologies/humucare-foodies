@@ -9,6 +9,22 @@
         </div>
     </div>
 
+    @unless (emailDeliveryConfigured())
+    <div class="col-lg-12">
+        <div class="alert alert-warning" role="alert">
+            <i class="las la-exclamation-triangle"></i>
+            <strong>@lang('Email alerts are switched off.')</strong>
+            @lang('Requests are still saved and listed below, but no email is sent to you or the customer —
+            "Email From" is not set, so the mailer refuses to send. Set it under')
+            <a href="{{ route('admin.setting.index') }}">@lang('General Settings')</a>
+            @lang('and add your SMTP details under Email Settings.')
+            @if (adminNotifyAddress())
+                <br><small>@lang('Alerts will go to') <strong>{{ adminNotifyAddress() }}</strong> @lang('once sending works.')</small>
+            @endif
+        </div>
+    </div>
+    @endunless
+
     <div class="col-lg-12">
         <div class="card b-radius--10">
             <div class="card-body p-0">
