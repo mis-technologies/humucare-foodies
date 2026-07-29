@@ -38,6 +38,7 @@
             <h6 class="fd-footer__title">@lang('Company')</h6>
             <ul class="fd-footer__links">
                 <li><a href="{{ route('contact') }}">@lang('Contact Us')</a></li>
+                <li><a href="{{ route('special.request') }}">@lang('Catering &amp; Bulk Orders')</a></li>
                 <li><a href="{{ route('track-order') }}">@lang('Track Order')</a></li>
                 <li><a href="{{ route('wishlist') }}">@lang('My Wishlist')</a></li>
                 @foreach ($policyPages as $policy)

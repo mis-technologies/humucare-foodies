@@ -236,6 +236,17 @@
                         </ul>
                     </div>
                 </li>
+                <li class="sidebar-menu-item {{ menuActive('admin.special.request.index') }}">
+                    <a href="{{ route('admin.special.request.index') }}" class="nav-link"
+                        data-default-url="{{ route('admin.special.request.index') }}">
+                        <i class="menu-icon las la-concierge-bell"></i>
+                        <span class="menu-title">@lang('Special Requests')</span>
+                        @if ($new_special_request_count > 0)
+                        <span class="menu-badge pill bg--primary ml-auto">{{ $new_special_request_count }}</span>
+                        @endif
+                    </a>
+                </li>
+
                 {{-- HIDDEN: "Payments" here manages WALLET DEPOSITS (customer top-ups),
                      which a restaurant does not use. Online ORDER payments still appear
                      under Manage Orders. Routes/controllers kept intact because the online

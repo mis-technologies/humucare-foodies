@@ -7,6 +7,8 @@
 
     @include($activeTemplate.'sections.specials')
 
+    @include($activeTemplate.'sections.special_request')
+
     @include($activeTemplate.'sections.why_choose')
 
 @endsection

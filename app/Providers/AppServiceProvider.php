@@ -10,6 +10,7 @@ use App\Models\GeneralSetting;
 use App\Models\Language;
 use App\Models\Order;
 use App\Models\Page;
+use App\Models\SpecialRequest;
 use App\Models\SupportTicket;
 use App\Models\User;
 use App\Models\Withdrawal;
@@ -87,6 +88,7 @@ class AppServiceProvider extends ServiceProvider {
                 'pending_deposits_count'       => Deposit::pending()->count(),
                 'pending_withdraw_count'       => Withdrawal::pending()->count(),
                 'pending_order_count'          => Order::pending()->count(),
+                'new_special_request_count'    => SpecialRequest::pending()->count(),
             ]);
         });
 

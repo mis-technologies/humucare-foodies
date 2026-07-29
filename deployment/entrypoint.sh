@@ -28,14 +28,18 @@ done
 echo "  ✓ Database connected"
 
 # ---- Run pending migrations ----
-echo "[2/4] Checking for pending migrations..."
-PENDING=$(php artisan migrate:status 2>/dev/null | grep -c "Pending" || true)
-if [ "$PENDING" -gt 0 ]; then
-  echo "  Found $PENDING pending migration(s), running..."
-  php artisan migrate --force 2>&1 || echo "  ✗ Migration failed, continuing..."
-  echo "  ✓ Migrations complete"
+#
+# `migrate --force` is run unconditionally because it is already idempotent:
+# it applies only what the migrations table says is missing, and is a no-op
+# otherwise. The previous version gated this on
+# `migrate:status | grep -c "Pending"`, which silently never matched — Laravel 8
+# prints a Yes/No "Ran?" column, not the word "Pending" (that wording is 9+).
+# The count was therefore always 0 and NO migration ever ran on deploy.
+echo "[2/4] Running database migrations..."
+if php artisan migrate --force 2>&1; then
+  echo "  ✓ Migrations up to date"
 else
-  echo "  ✓ No pending migrations"
+  echo "  ✗ Migration failed, continuing..."
 fi
 
 # ---- Run seeders (OPT-IN ONLY) ----

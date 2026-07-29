@@ -1097,6 +1097,61 @@ function notifyAdminNewOrder($order) {
 }
 
 /**
+ * Shortcodes shared by every special-request email, so the admin alert, the
+ * customer acknowledgement and the quote reply all speak the same language.
+ */
+function specialRequestShortCodes($req) {
+    $general = GeneralSetting::first();
+
+    return [
+        'request_no'   => $req->request_no,
+        'request_type' => $req->type_name,
+        'item'         => $req->item,
+        'quantity'     => $req->quantity,
+        'needed_on'    => $req->needed_on ? $req->needed_on->format('d M Y') : 'Not specified',
+        'people'       => $req->people ?: 'Not specified',
+        'budget'       => $req->budget ? $general->cur_sym . showAmount($req->budget) : 'Not specified',
+        'name'         => $req->name,
+        'email'        => $req->email,
+        'phone'        => $req->phone,
+        'details'      => nl2br(e($req->details ?: 'None')),
+    ];
+}
+
+/**
+ * Render one of the special-request templates and send it.
+ *
+ * Mirrors notifyAdminNewOrder(): a dead mail server must never turn a
+ * successful enquiry into an error page, so everything is swallowed and logged.
+ */
+function sendSpecialRequestEmail($to, $act, $req, $extra = []) {
+    try {
+        $general = GeneralSetting::first();
+
+        if (!$to || $general->en != 1) {
+            return; // no destination, or email notifications switched off
+        }
+
+        $template = EmailTemplate::where('act', $act)->where('email_status', 1)->first();
+        if (!$template) {
+            return;
+        }
+
+        $message = $template->email_body;
+        $subject = $template->subj;
+
+        foreach (specialRequestShortCodes($req) + $extra as $code => $value) {
+            $message = shortCodeReplacer('{{' . $code . '}}', $value, $message);
+            $subject = shortCodeReplacer('{{' . $code . '}}', $value, $subject);
+        }
+
+        sendGeneralEmail($to, $subject, $message, $req->name);
+    } catch (\Throwable $e) {
+        \Log::error('Special request email (' . $act . ') failed: ' . $e->getMessage());
+    }
+}
+
+/**
  * Ordering-availability config with safe defaults, so the storefront never
  * breaks if the blob is missing a key.
  */
