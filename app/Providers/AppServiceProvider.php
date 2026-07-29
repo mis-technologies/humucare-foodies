@@ -53,20 +53,47 @@ class AppServiceProvider extends ServiceProvider {
             }
         }
 
-        // The app is not installed until its core tables exist. Without this
-        // guard every artisan command (including `migrate` itself) crashes on
-        // a fresh database, making the app impossible to install.
-        //
-        // The try/catch also covers the DB being unreachable entirely — e.g.
-        // during `docker build` (composer's package:discover) or before the
-        // database container is up — so console commands never fatal.
+        // The app is not installed until its core tables exist AND carry a
+        // settings row. Everything below shares data that every view depends on.
         try {
-            if (!\Illuminate\Support\Facades\Schema::hasTable('general_settings')
-                || !GeneralSetting::query()->exists()) {
+            $installed = \Illuminate\Support\Facades\Schema::hasTable('general_settings')
+                && GeneralSetting::query()->exists();
+            $reason    = $installed ? '' : 'the database has no general_settings row';
+        } catch (\Throwable $e) {
+            // DB unreachable entirely — e.g. during `docker build`
+            // (composer's package:discover) or before the db container is up.
+            $installed = false;
+            $reason    = 'the database is unreachable (' . $e->getMessage() . ')';
+        }
+
+        if (!$installed) {
+            // Console must keep working: `migrate` itself has to run before
+            // these tables exist, so a fresh install would be impossible.
+            if (app()->runningInConsole()) {
                 return;
             }
-        } catch (\Throwable $e) {
-            return;
+
+            // A web request, though, cannot render ANY view without the shares
+            // below. Returning quietly here surfaced as "Undefined variable
+            // $activeTemplate" deep inside a Blade file, which says nothing
+            // about the real problem. Fail loudly and usefully instead.
+            $hint = 'Foodies is not installed: ' . $reason
+                . '. Run `php artisan migrate`, import database/foodies-install.sql, '
+                . 'then `php artisan config:clear`.';
+
+            // Always on record — abort()'s message never reaches the operator,
+            // so the log is the only place the reason survives in production.
+            \Illuminate\Support\Facades\Log::critical($hint);
+
+            // Laravel renders a bare "Service Unavailable" page for abort(503)
+            // and discards the message. With debug on, throw instead so the
+            // whole hint appears on the debug page; in production keep the
+            // clean 503 and rely on the log line above.
+            if (config('app.debug')) {
+                throw new \RuntimeException($hint);
+            }
+
+            abort(503, $hint);
         }
 
         $activeTemplate                  = activeTemplate();
