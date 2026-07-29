@@ -347,6 +347,11 @@ Route::namespace ('Admin')->prefix('admin')->name('admin.')->group(function () {
         // SEO
         Route::get('seo', 'FrontendController@seoEdit')->name('seo');
         // Frontend
+        // home-page hero video (stored on S3 so it survives redeploys)
+        Route::get('homepage-video', 'HomepageVideoController@index')->name('homepage.video');
+        Route::post('homepage-video', 'HomepageVideoController@update')->name('homepage.video.update');
+        Route::post('homepage-video/reset', 'HomepageVideoController@reset')->name('homepage.video.reset');
+
         Route::name('frontend.')->prefix('frontend')->group(function () {
             Route::get('templates', 'FrontendController@templates')->name('templates');
             Route::post('templates', 'FrontendController@templatesActive')->name('templates.active');

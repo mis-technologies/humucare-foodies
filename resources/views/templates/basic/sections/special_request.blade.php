@@ -47,18 +47,21 @@
                         </div>
                     @endforeach
                 @else
+                    {{-- Line Awesome glyphs, not emoji: emoji render as each
+                         platform's own artwork (and read as clip-art), while
+                         these inherit the site's amber accent and icon set. --}}
                     <div class="fd-req-cta__card">
-                        <span class="fd-req-cta__emoji">🍲</span>
+                        <span class="fd-req-cta__ic fd-req-cta__ic--glyph"><i class="las la-mug-hot"></i></span>
                         <strong>@lang('1 litre of soup')</strong>
                         <small>@lang('Egusi, Okra, Pepper soup')</small>
                     </div>
                     <div class="fd-req-cta__card fd-req-cta__card--lift">
-                        <span class="fd-req-cta__emoji">🍚</span>
+                        <span class="fd-req-cta__ic fd-req-cta__ic--glyph"><i class="las la-utensils"></i></span>
                         <strong>@lang('A tray of Jollof')</strong>
                         <small>@lang('Serves 20–50 guests')</small>
                     </div>
                     <div class="fd-req-cta__card">
-                        <span class="fd-req-cta__emoji">🎉</span>
+                        <span class="fd-req-cta__ic fd-req-cta__ic--glyph"><i class="las la-glass-cheers"></i></span>
                         <strong>@lang('Full party menu')</strong>
                         <small>@lang('Built around your budget')</small>
                     </div>
