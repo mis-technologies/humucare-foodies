@@ -1036,13 +1036,13 @@ function optionSummary($options) {
  * Email the restaurant when an order arrives.
  *
  * The shipped code only ever notified the CUSTOMER — nothing told the kitchen.
- * Sends to the address in General Settings ("email_from"), using the
- * ADMIN_NEW_ORDER template. Never let a mail failure break checkout.
+ * Goes to adminNotifyAddress() (the admin account, not the noreply sender),
+ * using the ADMIN_NEW_ORDER template. Never let a mail failure break checkout.
  */
 function notifyAdminNewOrder($order) {
     try {
         $general = GeneralSetting::first();
-        $to      = trim($general->email_from ?? '');
+        $to      = adminNotifyAddress();
 
         if (!$to || $general->en != 1) {
             return; // no destination, or email notifications switched off
@@ -1094,6 +1094,44 @@ function notifyAdminNewOrder($order) {
         // an order must never fail because the mail server is down
         \Log::error('Admin new-order email failed: ' . $e->getMessage());
     }
+}
+
+/**
+ * Where restaurant-facing alerts (new order, new special request) are sent.
+ *
+ * Prefers the admin account's own address. `email_from` is the SENDER — on most
+ * setups it is a "noreply@" mailbox nobody reads — so alerting it means the
+ * kitchen never sees the message. Falls back to email_from when the admin
+ * account has no address, and returns '' when neither is set (caller skips).
+ */
+function adminNotifyAddress() {
+    static $address = null;
+
+    if ($address === null) {
+        try {
+            $admin   = \App\Models\Admin::whereNotNull('email')->orderBy('id')->first();
+            $address = trim(optional($admin)->email ?: '');
+        } catch (\Throwable $e) {
+            $address = '';
+        }
+
+        if (!$address) {
+            $address = trim(optional(GeneralSetting::first())->email_from ?: '');
+        }
+    }
+
+    return $address;
+}
+
+/**
+ * True when outgoing mail is actually deliverable. sendGeneralEmail() refuses
+ * to send without `email_from`, and does so silently — so screens that depend
+ * on email can call this to warn the operator instead of failing invisibly.
+ */
+function emailDeliveryConfigured() {
+    $general = GeneralSetting::first();
+
+    return $general && $general->en == 1 && trim($general->email_from ?: '') !== '';
 }
 
 /**
