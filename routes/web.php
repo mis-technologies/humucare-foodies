@@ -146,6 +146,14 @@ Route::namespace ('Admin')->prefix('admin')->name('admin.')->group(function () {
             Route::post('/assign/{id}', 'OptionGroupController@assign')->name('assign');
         });
 
+        // customer enquiries for bulk portions / party catering
+        Route::prefix('special-request')->name('special.request.')->group(function () {
+            Route::get('/', 'SpecialRequestController@index')->name('index');
+            Route::post('/reply/{id}', 'SpecialRequestController@reply')->name('reply');
+            Route::post('/status/{id}', 'SpecialRequestController@status')->name('status');
+            Route::post('/delete/{id}', 'SpecialRequestController@destroy')->name('delete');
+        });
+
         Route::prefix('brand')->name('brand.')->group(function () {
             Route::get('/index', 'BrandController@index')->name('index');
             Route::post('/store/{id?}', 'BrandController@store')->name('store');
@@ -437,6 +445,12 @@ Route::name('user.')->prefix('user')->group(function () {
 
 Route::get('/contact', 'SiteController@contact')->name('contact');
 Route::post('/contact', 'SiteController@contactSubmit');
+
+// Must stay ABOVE the `/{slug}` catch-all further down, or that route swallows
+// the single-segment GET and the page 404s.
+Route::get('/special-request', 'SpecialRequestController@index')->name('special.request');
+Route::post('/special-request', 'SpecialRequestController@store')->name('special.request.store')
+    ->middleware('throttle:8,1'); // quote form, not a login — generous but bot-proof
 Route::get('/change/{lang?}', 'SiteController@changeLanguage')->name('lang');
 Route::get('page/{id}/{slug}', 'SiteController@pageDetails')->name('page.details');
 
