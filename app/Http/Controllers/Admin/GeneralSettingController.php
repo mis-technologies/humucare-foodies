@@ -69,13 +69,7 @@ class GeneralSettingController extends Controller {
 
         if ($request->hasFile('logo')) {
             try {
-                $path = imagePath()['logoIcon']['path'];
-
-                if (!file_exists($path)) {
-                    mkdir($path, 0755, true);
-                }
-
-                Image::make($request->logo)->save($path . '/logo.png');
+                storeBrandImage(Image::make($request->logo), 'logo.png');
             } catch (\Exception $exp) {
                 $notify[] = ['error', 'Logo could not be uploaded.'];
                 return back()->withNotify($notify);
@@ -85,14 +79,8 @@ class GeneralSettingController extends Controller {
 
         if ($request->hasFile('favicon')) {
             try {
-                $path = imagePath()['logoIcon']['path'];
-
-                if (!file_exists($path)) {
-                    mkdir($path, 0755, true);
-                }
-
                 $size = explode('x', imagePath()['favicon']['size']);
-                Image::make($request->favicon)->resize($size[0], $size[1])->save($path . '/favicon.png');
+                storeBrandImage(Image::make($request->favicon)->resize($size[0], $size[1]), 'favicon.png');
             } catch (\Exception $exp) {
                 $notify[] = ['error', 'Favicon could not be uploaded.'];
                 return back()->withNotify($notify);

@@ -1097,6 +1097,95 @@ function notifyAdminNewOrder($order) {
 }
 
 /**
+ * Store one of the two fixed-name brand images (logo.png / favicon.png).
+ *
+ * These cannot go through uploadImage(): the views hardcode the filenames, so
+ * the upload must overwrite in place rather than receive a uniqid name. On S3
+ * the object is replaced — important on Docker, where the container filesystem
+ * is wiped on every redeploy and a locally-saved logo would silently vanish.
+ */
+function storeBrandImage($image, $filename) {
+    $dir = imagePath()['logoIcon']['path'];
+
+    if (usesS3Storage()) {
+        Storage::disk('s3')->put($dir . '/' . $filename, (string) $image->encode('png'));
+    } else {
+        if (!file_exists($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        $image->save($dir . '/' . $filename);
+    }
+
+    // drop the "is there a custom one?" flag so the new file shows immediately
+    \Illuminate\Support\Facades\Cache::forget('brand_image_' . $filename);
+}
+
+/**
+ * URL for a brand image, preferring an admin-uploaded one.
+ *
+ * getImage() cannot be used here: it checks the local disk first, and the repo
+ * ships placeholder logo.png/favicon.png files that would permanently shadow
+ * anything the restaurant uploads. So when S3 is in use we look there first.
+ * The existence check is cached for an hour — one HEAD per file, not per request.
+ */
+function brandImage($filename) {
+    $path = imagePath()['logoIcon']['path'] . '/' . $filename;
+
+    if (usesS3Storage()) {
+        $exists = \Illuminate\Support\Facades\Cache::remember(
+            'brand_image_' . $filename,
+            3600,
+            function () use ($path) {
+                try {
+                    return Storage::disk('s3')->exists($path);
+                } catch (\Throwable $e) {
+                    return false;
+                }
+            }
+        );
+
+        if ($exists) {
+            return rtrim(config('filesystems.disks.s3.url'), '/') . '/' . $path;
+        }
+    }
+
+    return asset($path);
+}
+
+/**
+ * Public URL for a non-image upload (e.g. the home-page video). Mirrors
+ * getImage()'s resolution order — local file wins, then S3 — but returns the
+ * raw path rather than a placeholder when nothing is found.
+ */
+function fileUrl($path) {
+    $path = ltrim($path, '/');
+
+    if (file_exists(public_path($path)) && is_file(public_path($path))) {
+        return asset($path);
+    }
+
+    if (usesS3Storage()) {
+        return rtrim(config('filesystems.disks.s3.url'), '/') . '/' . $path;
+    }
+
+    return asset($path);
+}
+
+/**
+ * The clip shown beside "Why you should choose Foodies".
+ *
+ * Falls back to the bundled /foodies.mp4 so the section never renders an empty
+ * <video> on a fresh install where nothing has been uploaded yet.
+ */
+function homepageVideoUrl() {
+    $file = optional(getContent('why_choose.content', true))->data_values->video ?? null;
+
+    return $file
+        ? fileUrl('assets/frontend/video/' . $file)
+        : asset('foodies.mp4');
+}
+
+/**
  * Where restaurant-facing alerts (new order, new special request) are sent.
  *
  * Prefers the admin account's own address. `email_from` is the SENDER — on most

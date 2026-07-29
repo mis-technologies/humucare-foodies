@@ -23,8 +23,10 @@
                 <a href="{{ route('products') }}" class="fd-btn fd-btn--lg">@lang('Order Now') <i class="las la-arrow-right"></i></a>
             </div>
             <div class="fd-why__media">
+                {{-- managed in Admin > Home Page Video; falls back to the
+                     bundled clip when nothing has been uploaded --}}
                 <video autoplay muted loop playsinline>
-                    <source src="/foodies.mp4" type="video/mp4">
+                    <source src="{{ homepageVideoUrl() }}" type="video/mp4">
                 </video>
             </div>
         </div>

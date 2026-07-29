@@ -236,6 +236,14 @@
                         </ul>
                     </div>
                 </li>
+                <li class="sidebar-menu-item {{ menuActive('admin.homepage.video') }}">
+                    <a href="{{ route('admin.homepage.video') }}" class="nav-link"
+                        data-default-url="{{ route('admin.homepage.video') }}">
+                        <i class="menu-icon las la-film"></i>
+                        <span class="menu-title">@lang('Home Page Video')</span>
+                    </a>
+                </li>
+
                 <li class="sidebar-menu-item {{ menuActive('admin.special.request.index') }}">
                     <a href="{{ route('admin.special.request.index') }}" class="nav-link"
                         data-default-url="{{ route('admin.special.request.index') }}">
