@@ -72,6 +72,12 @@ class ProductController extends Controller {
             'files.*'        => ['image', new FileTypeValidate(['jpeg', 'jpg', 'png'])],
             'digi_file'      => ['required_if:file_type,1', new FileTypeValidate(['pdf', 'docx', 'txt', 'zip', 'xlx', 'csv', 'ai', 'psd', 'pptx'])],
             'digi_link'      => 'required_if:file_type,2',
+            // Size/volume pricing is optional and the form only renders these
+            // rows when volume_ranges has entries — so the whole key is often
+            // absent. Declaring it nullable keeps the shape predictable.
+            'volumes'          => 'nullable|array',
+            'volumes.*.volume' => 'nullable|numeric|min:0',
+            'volumes.*.price'  => 'nullable|numeric|min:0',
         ]);
 
 
@@ -136,6 +142,12 @@ class ProductController extends Controller {
 
         }
 
+        // One transaction for the product, its gallery and its volume prices.
+        // Previously the product was saved first and the volume loop crashed
+        // afterwards, leaving a half-created product behind: the admin saw an
+        // error, retried, and ended up with duplicates.
+        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $galleryFileName, $filename, $digiFile, $input_feature) {
+
         $product                   = new Product();
         $product->name             = $request->name;
         $product->product_sku      = $request->product_sku;
@@ -168,21 +180,30 @@ class ProductController extends Controller {
         }
 
 
-        foreach ($request->volumes as $volumeData) {
-            if (isset($volumeData['volume']) && isset($volumeData['price'])) {
-                $volume = $volumeData['volume'];
-                $price = $volumeData['price'];
+        // `volumes` is absent whenever the form renders no size rows — which is
+        // the case on any install where volume_ranges is empty. input(..., [])
+        // yields an empty array there instead of null, which used to fatal with
+        // "foreach() argument must be of type array|object, null given".
+        foreach ($request->input('volumes', []) as $volumeData) {
+            if (!is_array($volumeData)) {
+                continue;
+            }
 
-                // Ensure the volume and price are not empty before saving
-                if (!empty($volume) && !empty($price)) {
-                    $productPrice = new ProductPricePerVolume();
-                    $productPrice->product_id = $product->id; // Reference the saved product
-                    $productPrice->volume = $volume;
-                    $productPrice->price = $price;
-                    $productPrice->save();
-                }
+            $volume = $volumeData['volume'] ?? null;
+            $price  = $volumeData['price'] ?? null;
+
+            // A row only counts when a size was picked AND priced. The select's
+            // placeholder is disabled, so an untouched row posts no volume.
+            if ($volume !== null && $volume !== '' && $price !== null && $price !== '' && $price > 0) {
+                $productPrice             = new ProductPricePerVolume();
+                $productPrice->product_id = $product->id;
+                $productPrice->volume     = $volume;
+                $productPrice->price      = $price;
+                $productPrice->save();
             }
         }
+
+        });
 
 
 
@@ -382,13 +403,14 @@ class ProductController extends Controller {
             ]);
 
         }
-        foreach ($request->volumes as $volumeData) {
-            if (isset($volumeData['volume']) && isset($volumeData['price'])) {
-                $volume = $volumeData['volume'];
-                $price = $volumeData['price'];
+        // Same guard as store(): the key is absent when the form renders no
+        // size rows, and foreach(null) is fatal.
+        foreach ($request->input('volumes', []) as $volumeData) {
+            if (is_array($volumeData)) {
+                $volume = $volumeData['volume'] ?? null;
+                $price  = $volumeData['price'] ?? null;
 
-                // dd($volume);
-                if ($price != 0) {
+                if ($volume !== null && $volume !== '' && $price !== null && $price !== '' && $price > 0) {
 
 
                 // Check both product_id and volume for the update or create operation
