@@ -43,7 +43,7 @@ class UserController extends Controller {
         $pageTitle   = "Profile Setting";
         $user        = Auth::user();
         $info        = json_decode(json_encode(getIpInfo()), true);
-        $mobile_code = @implode(',', $info['code']);
+        $mobile_code = geoValue($info['code'] ?? null);
         $countries   = json_decode(file_get_contents(resource_path('views/partials/country.json')));
         return view($this->activeTemplate . 'user.profile_setting', compact('pageTitle', 'user', 'countries', 'mobile_code'));
     }
