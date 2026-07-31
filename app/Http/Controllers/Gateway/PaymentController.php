@@ -175,15 +175,23 @@ class PaymentController extends Controller {
             $transaction->trx          = $data->trx;
             $transaction->save();
 
-            notify($user, 'ORDER_COMPLETE', [
-                'method_name'     => 'Order successfully done via ' . $data->gatewayCurrency()->name,
-                'user_name'       => $user->username,
-                'subtotal'        => showAmount($order->subtotal),
-                'total'           => showAmount($order->total),
-                'shipping_charge' => showAmount($order->shipping_charge),
-                'currency'        => $general->cur_text,
-                'order_no'        => $order->order_no,
-            ]);
+            // The payment has already been taken by this point. sendSmtpMail()
+            // rethrows on any transport failure and sendEmail() does not catch,
+            // so an unreachable mail server would 500 the customer AFTER their
+            // card was charged. Log it and let the order stand.
+            try {
+                notify($user, 'ORDER_COMPLETE', [
+                    'method_name'     => 'Order successfully done via ' . $data->gatewayCurrency()->name,
+                    'user_name'       => $user->username,
+                    'subtotal'        => showAmount($order->subtotal),
+                    'total'           => showAmount($order->total),
+                    'shipping_charge' => showAmount($order->shipping_charge),
+                    'currency'        => $general->cur_text,
+                    'order_no'        => $order->order_no,
+                ]);
+            } catch (\Throwable $e) {
+                \Log::error('Customer order email failed (gateway): ' . $e->getMessage());
+            }
 
         }
 
@@ -329,15 +337,21 @@ class PaymentController extends Controller {
 
         if (Auth::check()) {
 
-            notify($user, 'ORDER_COMPLETE', [
-                'method_name'     => 'Order successfully done via ' . $data->gatewayCurrency()->name,
-                'user_name'       => $user->username ?? 'null',
-                'subtotal'        => showAmount($order->subtotal),
-                'total'           => showAmount($order->total),
-                'shipping_charge' => showAmount($order->shipping_charge),
-                'currency'        => $general->cur_text,
-                'order_no'        => $order->order_no,
-            ]);
+            // Same as above: payment is already taken, so a mail failure must
+            // not turn a successful order into an error page.
+            try {
+                notify($user, 'ORDER_COMPLETE', [
+                    'method_name'     => 'Order successfully done via ' . $data->gatewayCurrency()->name,
+                    'user_name'       => $user->username ?? 'null',
+                    'subtotal'        => showAmount($order->subtotal),
+                    'total'           => showAmount($order->total),
+                    'shipping_charge' => showAmount($order->shipping_charge),
+                    'currency'        => $general->cur_text,
+                    'order_no'        => $order->order_no,
+                ]);
+            } catch (\Throwable $e) {
+                \Log::error('Customer order email failed (manual gateway): ' . $e->getMessage());
+            }
 
         }
 
