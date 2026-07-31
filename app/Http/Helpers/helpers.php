@@ -359,6 +359,23 @@ function str_limit($title = null, $length = 10) {
 }
 
 //moveable
+/**
+ * Flatten one field of getIpInfo() into a string for the user_logins table.
+ *
+ * The shipped code did `@implode(',', $info['city'])`. geoplugin returns
+ * scalars, and in PHP 8 implode() THROWS a TypeError on a string — `@` only
+ * suppresses diagnostics, never thrown errors. On PHP 8.3 (what the Docker
+ * image runs) that made every login and registration from a new IP a 500.
+ * Accepts a string, an array, null or a missing key and always returns a string.
+ */
+function geoValue($value) {
+    if (is_array($value)) {
+        return implode(',', array_filter($value, 'is_scalar'));
+    }
+
+    return is_scalar($value) ? (string) $value : '';
+}
+
 function getIpInfo() {
     $ip = $_SERVER["REMOTE_ADDR"];
 
@@ -581,8 +598,13 @@ function sendEmail($user, $type = null, $shortCodes = []) {
         $message = $emailTemplate->email_body;
     }
 
+    // The subject needs the same treatment as the body. Without this the
+    // customer received a literal "Your Foodies order {{order_no}} is confirmed".
+    $subject = $emailTemplate->subj;
+
     foreach ($shortCodes as $code => $value) {
         $message = shortCodeReplacer('{{' . $code . '}}', $value, $message);
+        $subject = shortCodeReplacer('{{' . $code . '}}', $value, $subject);
     }
 
     $config = $general->mail_config;
@@ -592,24 +614,24 @@ function sendEmail($user, $type = null, $shortCodes = []) {
     $emailLog->mail_sender = $config->name;
     $emailLog->email_from  = $general->sitename . ' ' . $general->email_from;
     $emailLog->email_to    = $user->email;
-    $emailLog->subject     = $emailTemplate->subj;
+    $emailLog->subject     = $subject;
     $emailLog->message     = $message;
     $emailLog->save();
 
     if ($config->name == 'php') {
-        sendPhpMail($user->email, $user->username, $emailTemplate->subj, $message, $general);
+        sendPhpMail($user->email, $user->username, $subject, $message, $general);
     } else
 
     if ($config->name == 'smtp') {
-        sendSmtpMail($config, $user->email, $user->username, $emailTemplate->subj, $message, $general);
+        sendSmtpMail($config, $user->email, $user->username, $subject, $message, $general);
     } else
 
     if ($config->name == 'sendgrid') {
-        sendSendGridMail($config, $user->email, $user->username, $emailTemplate->subj, $message, $general);
+        sendSendGridMail($config, $user->email, $user->username, $subject, $message, $general);
     } else
 
     if ($config->name == 'mailjet') {
-        sendMailjetMail($config, $user->email, $user->username, $emailTemplate->subj, $message, $general);
+        sendMailjetMail($config, $user->email, $user->username, $subject, $message, $general);
     }
 
 }
