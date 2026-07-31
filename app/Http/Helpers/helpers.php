@@ -562,6 +562,17 @@ function sendEmail($user, $type = null, $shortCodes = []) {
         return;
     }
 
+    // Without a From address PHPMailer throws "Invalid address: (From)" from
+    // deep inside the transport, which callers then have to catch. sendGeneralEmail()
+    // already skips in this case; do the same here so an unconfigured mailer is a
+    // logged no-op rather than an exception surfacing in checkout.
+    if (!trim($general->email_from ?: '')) {
+        \Illuminate\Support\Facades\Log::warning(
+            'Email not sent (' . $type . '): "Email From" is not set in General Settings.'
+        );
+        return;
+    }
+
     $message = shortCodeReplacer("{{fullname}}", $user->fullname, $general->email_template);
     $message = shortCodeReplacer("{{username}}", $user->username, $message);
     $message = shortCodeReplacer("{{message}}", $emailTemplate->email_body, $message);
