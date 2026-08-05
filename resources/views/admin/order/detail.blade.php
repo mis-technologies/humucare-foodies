@@ -97,26 +97,40 @@
                             </li>
                             @endif
                             @php
-                                $address = json_decode($order->address);
+                                // A collection order stores only {"type":"collection"} — there is
+                                // no delivery address to show. Reading ->address on it fataled
+                                // with "Undefined property: stdClass::$address", so the whole
+                                // order detail page 500'd for every collection order.
+                                $address     = json_decode($order->address);
+                                $isCollection = ($order->fulfilment_type ?? null) === 'collection'
+                                    || (isset($address->type) && $address->type === 'collection');
                             @endphp
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                @lang('Fulfilment')
+                                <span class="font-weight-bold">
+                                    {{ $isCollection ? __('Collection (customer picks up)') : __('Delivery') }}
+                                </span>
+                            </li>
+                            @unless ($isCollection)
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 @lang('Delivery Address')
                                 <span class="font-weight-bold">
-                                    {{ __($address->address) }}
+                                    {{ __(@$address->address) }}
                                 </span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 @lang('Country & State')
                                 <span class="font-weight-bold">
-                                    {{ __($address->country) }} @lang('&') {{ __($address->state) }}
+                                    {{ __(@$address->country) }} @lang('&') {{ __(@$address->state) }}
                                 </span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 @lang('City & Zip')
                                 <span class="font-weight-bold">
-                                    {{ __($address->city) }} @lang('&') {{ __($address->zip) }}
+                                    {{ __(@$address->city) }} @lang('&') {{ __(@$address->zip) }}
                                 </span>
                             </li>
+                            @endunless
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 @lang('Payment Status')
                                 @php

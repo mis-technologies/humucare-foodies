@@ -6,6 +6,11 @@
    to beat color.php.
    ============================================================= */
 
+html, body {
+    overflow-x: hidden;
+    overflow-x: clip;
+}
+
 :root {
     --fd-dark: #14142e;          /* deep navy section bg */
     --fd-dark-2: #1c1c3d;        /* raised navy surface */
@@ -773,6 +778,7 @@ a { text-decoration: none; }
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: 8px;
     padding-top: 4px;
 }
@@ -789,7 +795,10 @@ a { text-decoration: none; }
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 58%;
+    min-width: 0;
+    /* was 58%: "Main Course" needed 88px and got 83, so it rendered as
+       "Main Cou…". The footer wraps now, so the chip can take what it needs. */
+    max-width: 100%;
 }
 .fd-card__add {
     display: inline-flex !important;
@@ -804,6 +813,7 @@ a { text-decoration: none; }
     border: 0 !important;
     border-radius: 8px !important;
     padding: 7px 14px !important;
+    flex-shrink: 0;
     box-shadow: none !important;
     cursor: pointer;
     transition: background .15s ease, transform .15s ease !important;
@@ -1344,10 +1354,18 @@ a { text-decoration: none; }
 .fd-mobile-nav {
     position: fixed; inset: 0 0 0 auto; width: min(320px, 86vw);
     background: #fff; z-index: 2000; padding: 24px;
-    transform: translateX(100%); transition: transform .28s ease;
+    transform: translateX(100%);
+    /* visibility flips instantly on open, but waits for the slide-out to finish
+       on close — a plain duration would keep the panel invisible while it slides in */
+    transition: transform .28s ease, visibility 0s linear .28s;
     box-shadow: -20px 0 50px -20px rgba(0,0,0,.4); overflow-y: auto;
+    /* Closed, this panel sits 320px off the right edge. Being position:fixed it
+       escapes body's overflow-x, so it created a horizontal scrollbar on every
+       mobile page. visibility:hidden removes it from the scroll area — and
+       stops Tab and screen readers reaching a menu the user cannot see. */
+    visibility: hidden;
 }
-.fd-mobile-nav.open { transform: none; }
+.fd-mobile-nav.open { transform: none; visibility: visible; transition: transform .28s ease, visibility 0s; }
 .fd-mobile-nav a { display: block; padding: 12px 8px; color: var(--fd-ink); font-family: var(--fd-font-display); font-weight: 500; border-bottom: 1px solid var(--fd-line); }
 .fd-mobile-nav a:hover { color: var(--fd-amber); }
 .fd-mobile-nav__close { font-size: 26px; color: var(--fd-ink); background: none; border: 0; cursor: pointer; }
@@ -1641,4 +1659,25 @@ a { text-decoration: none; }
     .fd-req-modal .modal-body { padding: 20px; }
     .fd-req-modal__head { padding: 20px; }
     .fd-req-cta__actions .fd-btn { width: 100%; }
+}
+
+
+/* ---------- product card footer on narrow screens ----------
+   In the 2-up mobile grid the card is ~130px wide. The Add button does not
+   shrink, so the category chip was left with ~50px and rendered as "St…".
+   Stack them instead: both get the full card width and read in full. */
+@media (max-width: 575px) {
+    .fd-card__foot {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+    }
+    .fd-card__tag {
+        max-width: 100%;
+        text-align: center;
+    }
+    .fd-card__add {
+        width: 100%;
+        flex-shrink: 0;
+    }
 }

@@ -59,26 +59,36 @@
                             </li>
                             @endif
                             @php
-                                $address = json_decode($order->address);
+                                // Collection orders carry no address, so reading ->address on
+                                // them fataled and the customer could not open their own order.
+                                $address      = json_decode($order->address);
+                                $isCollection = ($order->fulfilment_type ?? null) === 'collection'
+                                    || (isset($address->type) && $address->type === 'collection');
                             @endphp
+                            <li>
+                                @lang('Fulfilment')
+                                <span>{{ $isCollection ? __('Collection') : __('Delivery') }}</span>
+                            </li>
+                            @unless ($isCollection)
                             <li>
                                 @lang('Delivery Address')
                                 <span>
-                                    {{ __($address->address) }}
+                                    {{ __(@$address->address) }}
                                 </span>
                             </li>
                             <li>
                                 @lang('Country & State')
                                 <span>
-                                    {{ __($address->country) }} @lang('&') {{ __($address->state) }}
+                                    {{ __(@$address->country) }} @lang('&') {{ __(@$address->state) }}
                                 </span>
                             </li>
                             <li>
                                 @lang('City & Zip')
                                 <span>
-                                    {{ __($address->city) }} @lang('&') {{ __($address->zip) }}
+                                    {{ __(@$address->city) }} @lang('&') {{ __(@$address->zip) }}
                                 </span>
                             </li>
+                            @endunless
                             <li>
                                 @lang('Payment Status')
                                 @php
