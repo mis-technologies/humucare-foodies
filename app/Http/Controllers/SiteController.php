@@ -116,7 +116,11 @@ class SiteController extends Controller {
         $imgWidth  = explode('x', $size)[0];
         $imgHeight = explode('x', $size)[1];
         $text      = $imgWidth . '×' . $imgHeight;
-        $fontFile  = realpath('assets/font') . DIRECTORY_SEPARATOR . 'RobotoMono-Regular.ttf';
+        // realpath('assets/font') resolved against the PROCESS working directory,
+        // not public/ — so under php-fpm it found nothing and imagettfbbox()
+        // fataled. Every product without an image renders this placeholder, so
+        // the whole storefront showed broken images.
+        $fontFile  = public_path('assets/font/RobotoMono-Regular.ttf');
         $fontSize  = round(($imgWidth - 50) / 8);
 
         if ($fontSize <= 9) {
@@ -131,13 +135,22 @@ class SiteController extends Controller {
         $colorFill = imagecolorallocate($image, 100, 100, 100);
         $bgFill    = imagecolorallocate($image, 175, 175, 175);
         imagefill($image, 0, 0, $bgFill);
-        $textBox    = imagettfbbox($fontSize, 0, $fontFile, $text);
-        $textWidth  = abs($textBox[4] - $textBox[0]);
-        $textHeight = abs($textBox[5] - $textBox[1]);
-        $textX      = ($imgWidth - $textWidth) / 2;
-        $textY      = ($imgHeight + $textHeight) / 2;
         header('Content-Type: image/jpeg');
-        imagettftext($image, $fontSize, 0, $textX, $textY, $colorFill, $fontFile, $text);
+
+        // A missing font must not 500 the image — fall back to the built-in
+        // bitmap font so a plain grey placeholder is still served.
+        if (is_file($fontFile) && function_exists('imagettfbbox')) {
+            $textBox    = imagettfbbox($fontSize, 0, $fontFile, $text);
+            $textWidth  = abs($textBox[4] - $textBox[0]);
+            $textHeight = abs($textBox[5] - $textBox[1]);
+            $textX      = ($imgWidth - $textWidth) / 2;
+            $textY      = ($imgHeight + $textHeight) / 2;
+            imagettftext($image, $fontSize, 0, $textX, $textY, $colorFill, $fontFile, $text);
+        } else {
+            imagestring($image, 5, max(0, (int) (($imgWidth - strlen($text) * 9) / 2)),
+                (int) ($imgHeight / 2 - 8), $text, $colorFill);
+        }
+
         imagejpeg($image);
         imagedestroy($image);
     }

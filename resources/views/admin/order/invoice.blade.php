@@ -374,7 +374,11 @@
                             <h5 class="text-uppercase">@lang('Invoice To')</h5>
                             <ul class="list" style="--gap: 0.3rem">
                                 @php
-                                    $address = json_decode($order->address);
+                                    // Collection orders store no address; guard so the invoice
+                                    // does not fatal on the missing properties.
+                                    $address      = json_decode($order->address);
+                                    $isCollection = ($order->fulfilment_type ?? null) === 'collection'
+                                        || (isset($address->type) && $address->type === 'collection');
                                 @endphp
                                 <li>
                                     <div class="list list--row" style="--gap: 0.5rem">
@@ -391,31 +395,31 @@
                                 <li>
                                     <div class="list list--row" style="--gap: 0.5rem">
                                         <span class="strong">@lang('Address :')</span>
-                                        <span>{{ __($address->address) }}</span>
+                                        <span>{{ __(@$address->address) ?: __('Collection') }}</span>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="list list--row" style="--gap: 0.5rem">
                                         <span class="strong">@lang('Country :')</span>
-                                        <span>{{ __($address->country) }}</span>
+                                        <span>{{ __(@$address->country) ?: __('Collection') }}</span>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="list list--row" style="--gap: 0.5rem">
                                         <span class="strong">@lang('State') :</span>
-                                        <span>{{ __($address->state) }}</span>
+                                        <span>{{ __(@$address->state) ?: __('Collection') }}</span>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="list list--row" style="--gap: 0.5rem">
                                         <span class="strong">@lang('City') :</span>
-                                        <span>{{ __($address->city) }}</span>
+                                        <span>{{ __(@$address->city) ?: __('Collection') }}</span>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="list list--row" style="--gap: 0.5rem">
                                         <span class="strong">@lang('Zip') :</span>
-                                        <span>{{ __($address->zip) }}</span>
+                                        <span>{{ __(@$address->zip) ?: __('Collection') }}</span>
                                     </div>
                                 </li>
                                 
