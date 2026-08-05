@@ -20,6 +20,8 @@ class CategoryController extends Controller {
 
         $emptyMessage = 'No category found';
         $categories = $categories->latest()->paginate(getPaginate());
+        // so saving an edit returns here, on this page and search, not page 1
+        rememberListUrl('category');
         return view('admin.category.index', compact('pageTitle', 'emptyMessage', 'categories'));
     }
 
@@ -63,6 +65,6 @@ class CategoryController extends Controller {
         $category->save();
 
         $notify[] = ['success',$notification];
-        return back()->withNotify($notify);
+        return redirect(listUrl('category', route('admin.category.index')))->withNotify($notify);
     }
 }

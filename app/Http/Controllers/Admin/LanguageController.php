@@ -88,7 +88,9 @@ class LanguageController extends Controller
 
     public function langEdit($id)
     {
-        $lang = Language::find($id);
+        // find() returned null for an unknown id and the next line fataled with
+        // "Attempt to read property name on null" — a 500 where a 404 belongs.
+        $lang = Language::findOrFail($id);
         $pageTitle = "Update " . $lang->name . " Keywords";
         $json = file_get_contents(resource_path('lang/') . $lang->code . '.json');
         $list_lang = Language::all();

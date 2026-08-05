@@ -20,6 +20,7 @@ class BrandController extends Controller {
         }
 
         $brands = $brands->latest()->paginate(getPaginate());
+        rememberListUrl('brand');
         return view('admin.brand.index', compact('pageTitle', 'emptyMessage', 'brands'));
     }
 
@@ -50,8 +51,9 @@ class BrandController extends Controller {
             try {
                 $brand->image  = uploadImage($request->image, $path, $size, $oldFile);
             } catch (\Exception $exp) {
+                // stay on the form so the admin does not lose what they typed
                 $notify[] = ['error', 'Image could not be uploaded.'];
-                return back()->withNotify($notify);
+                return back()->withNotify($notify)->withInput();
             }
         }
 
@@ -60,7 +62,7 @@ class BrandController extends Controller {
         $brand->save();
 
         $notify[] = ['success', $notification];
-        return back()->withNotify($notify);
+        return redirect(listUrl('brand', route('admin.brand.index')))->withNotify($notify);
     }
 
 }

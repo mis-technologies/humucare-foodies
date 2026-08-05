@@ -27,6 +27,7 @@ class SubCategoryController extends Controller {
         }
 
         $subcategories = $subcategories->with('category')->latest()->paginate(getPaginate());
+        rememberListUrl('subcategory');
         $categories    = Category::where('status', 1)->orderBy('name')->get();
 
         return view('admin.subcategory.index', compact('pageTitle', 'emptyMessage', 'subcategories', 'categories'));
@@ -53,7 +54,7 @@ class SubCategoryController extends Controller {
         $subcategory->save();
 
         $notify[] = ['success', $notification];
-        return back()->withNotify($notify);
+        return redirect(listUrl('subcategory', route('admin.subcategory.index')))->withNotify($notify);
     }
 
 }

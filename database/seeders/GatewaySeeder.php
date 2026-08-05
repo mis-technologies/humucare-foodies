@@ -74,7 +74,11 @@ class GatewaySeeder extends Seeder
                 'alias'                => 'bank_transfer',
                 'status'               => 1,
                 'gateway_parameters'   => json_encode([]),
-                'input_form'           => json_encode($inputForm),
+                // NOT json_encode()d: the model casts input_form to 'object', so
+                // Laravel encodes it on save. Pre-encoding produced a JSON string
+                // inside a JSON string, and the cast then decoded it back to a
+                // string — which the admin edit view tried to foreach over, 500ing.
+                'input_form'           => $inputForm,
                 'supported_currencies' => json_encode([]),
                 'crypto'               => 0,
                 'description'          => "Pay by bank transfer to:\n\nAccount name: Foodies Ltd\nSort code: 00-00-00\nAccount number: 00000000\n\nUse your order number as the payment reference, then submit the form below. Your order is confirmed once we verify the transfer.",
