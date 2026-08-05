@@ -25,6 +25,15 @@ class PaymentController extends Controller {
     public function deposit() {
         $order_id        = session()->get('order_id');
         $order           = Order::where('id', $order_id)->where('order_status', 0)->first();
+
+        // Reached directly, with no pending order in the session, $order is null
+        // and the view fataled on "$order->total". Send them back to the cart
+        // instead of showing a 500.
+        if (!$order) {
+            $notify[] = ['error', 'No order awaiting payment. Please place your order first.'];
+            return redirect()->route('cart')->withNotify($notify);
+        }
+
         $gatewayCurrency = GatewayCurrency::whereHas('method', function ($gate) {
             $gate->where('status', 1);
         })->with('method')->orderby('method_code')->get();

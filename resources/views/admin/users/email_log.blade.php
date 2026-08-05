@@ -58,5 +58,8 @@
 @endsection
 
 @push('breadcrumb-plugins')
-<a href="{{ route('admin.users.detail', $log->user_id) }}" class="btn btn--info"><i class="las la-user"></i> {{ $user->fullname }}</a>
+{{-- $log only exists inside the @forelse above; it leaked out of the loop and
+     happened to work only when the customer had email history. With none, this
+     500'd. $user is passed to the view for exactly this. --}}
+<a href="{{ route('admin.users.detail', $user->id) }}" class="btn btn--info"><i class="las la-user"></i> {{ $user->fullname }}</a>
 @endpush

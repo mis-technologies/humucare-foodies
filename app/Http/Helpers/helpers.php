@@ -360,6 +360,23 @@ function str_limit($title = null, $length = 10) {
 
 //moveable
 /**
+ * Remember which paginated admin list is on screen, so that saving an edit can
+ * return the admin to that page (and search term) instead of dumping them back
+ * on page 1 — which meant re-navigating after every single edit.
+ *
+ * Call rememberListUrl() in the list action and listUrl() when redirecting.
+ */
+function rememberListUrl($key) {
+    if (request()->isMethod('get')) {
+        session(['admin_list_url.' . $key => request()->fullUrl()]);
+    }
+}
+
+function listUrl($key, $fallback) {
+    return session('admin_list_url.' . $key, $fallback);
+}
+
+/**
  * Flatten one field of getIpInfo() into a string for the user_logins table.
  *
  * The shipped code did `@implode(',', $info['city'])`. geoplugin returns

@@ -432,13 +432,19 @@ Route::name('user.')->prefix('user')->group(function () {
             Route::get('payment/confirm', 'Gateway\PaymentController@depositConfirm')->name('deposit.confirm');
             Route::get('payment/manual', 'Gateway\PaymentController@manualDepositConfirm')->name('deposit.manual.confirm');
             Route::post('deposit/manual', 'Gateway\PaymentController@manualDepositUpdate')->name('deposit.manual.update');
-            Route::any('deposit/history', 'UserController@depositHistory')->name('deposit.history');
+            // REMOVED: 'deposit/history' pointed at UserController@depositHistory,
+            // which does not exist — the route only ever produced a 500.
 
         Route::get('/shipping/method', 'CheckoutController@shippingMethod')->name('shipping.method');
 
-        Route::get('/payment/history','UserController@paymentHistory')->name('payment.history');
-
-        Route::get('/my/orders', 'OrderController@orderHistory')->name('order.history');
+        // These two render a signed-in customer's own history. They sat outside
+        // the auth group above, so a guest got a blank "My Orders" page instead
+        // of being sent to log in. (No data leak — both filter on auth()->id(),
+        // which is null for a guest — but the page should never have rendered.)
+        Route::middleware('auth')->group(function () {
+            Route::get('/payment/history','UserController@paymentHistory')->name('payment.history');
+            Route::get('/my/orders', 'OrderController@orderHistory')->name('order.history');
+        });
 
         Route::post('/checkout/order', 'CheckoutController@order')->name('checkout.order');
 

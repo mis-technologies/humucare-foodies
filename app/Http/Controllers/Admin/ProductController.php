@@ -29,6 +29,8 @@ class ProductController extends Controller {
         }
 
         $products = $products->latest()->paginate(getPaginate());
+        // so saving an edit returns here, on this page and search, not page 1
+        rememberListUrl('product');
         return view('admin.product.index', compact('pageTitle', 'emptyMessage', 'products'));
     }
 
@@ -432,7 +434,10 @@ class ProductController extends Controller {
 
 
         $notify[] = ['success', 'Product updated successfully'];
-        return redirect()->back()->withNotify($notify)->withInput();
+        // Back to the list page the admin came from, keeping their page number
+        // and search. back() would have re-shown the edit form, and the list
+        // link then always reset to page 1.
+        return redirect(listUrl('product', route('admin.product.index')))->withNotify($notify);
     }
 
     public function digitalFileDownload($id) {

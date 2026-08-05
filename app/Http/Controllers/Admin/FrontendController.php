@@ -14,12 +14,25 @@ class FrontendController extends Controller
     public function templates()
     {
         $pageTitle = 'Templates';
-        $temPaths = array_filter(glob('core/resources/views/templates/*'), 'is_dir');
+
+        // The vendor ships the app inside a core/ directory; this repo does not,
+        // so the hardcoded glob matched nothing, $templates was never defined and
+        // compact() fataled with "Undefined variable $templates". Resolve from
+        // resource_path() and start from an empty array so an empty result is
+        // simply an empty list rather than a 500.
+        $templates = [];
+        $temPaths  = array_filter((array) glob(resource_path('views/templates') . '/*'), 'is_dir');
+
         foreach ($temPaths as $key => $temp) {
-            $arr = explode('/', $temp);
-            $tempname = end($arr);
-            $templates[$key]['name'] = $tempname;
-            $templates[$key]['image'] = asset($temp) . '/preview.jpg';
+            $tempname = basename($temp);
+            // preview.jpg lives under resources/ and is not web-reachable; the
+            // per-template public asset folder is where a served copy would be.
+            $preview  = 'assets/templates/' . $tempname . '/preview.jpg';
+
+            $templates[$key]['name']  = $tempname;
+            $templates[$key]['image'] = file_exists(public_path($preview))
+                ? asset($preview)
+                : route('placeholder.image', '600x400');
         }
         $extra_templates = json_decode(getTemplates(), true);
         return view('admin.frontend.templates', compact('pageTitle', 'templates', 'extra_templates'));
