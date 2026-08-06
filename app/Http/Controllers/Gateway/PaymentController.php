@@ -111,7 +111,18 @@ class PaymentController extends Controller {
         $dirName = $deposit->gateway->alias;
         $new     = __NAMESPACE__ . '\\' . $dirName . '\\ProcessController';
 
-        $data = $new::process($deposit);
+        // Drivers talk to a third party (Stripe, PayPal…) and throw on anything
+        // from a wrong API key to the provider being down. Unhandled, that put a
+        // raw 500 in front of a customer trying to pay. Log the real reason and
+        // send them back with a message instead.
+        try {
+            $data = $new::process($deposit);
+        } catch (\Throwable $e) {
+            \Log::error('Payment gateway ' . $dirName . ' failed: ' . $e->getMessage());
+            $notify[] = ['error', 'We could not reach the payment provider. Please try again, or choose another payment method.'];
+            return redirect()->route(gatewayRedirectUrl())->withNotify($notify);
+        }
+
         $data = json_decode($data);
 
         if (isset($data->error)) {
