@@ -37,8 +37,12 @@ COPY . .
 # RUN chmod -R 775 storage bootstrap/cache
 
 
-# Make sure storage dirs exist and are writable
-RUN mkdir -p storage/framework/views storage/framework/sessions storage/framework/cache bootstrap/cache \
+# Make sure storage dirs exist and are writable.
+# storage/app/purifier holds HTMLPurifier's serialized definitions — its default
+# location is inside vendor/, which www-data cannot write, and that made every
+# frontend-section save fail.
+RUN mkdir -p storage/framework/views storage/framework/sessions storage/framework/cache \
+        storage/app/purifier bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 

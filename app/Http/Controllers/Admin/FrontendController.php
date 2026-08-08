@@ -83,9 +83,36 @@ class FrontendController extends Controller
 
 
 
+    /**
+     * HTMLPurifier with a writable cache directory.
+     *
+     * The default serializer path is inside vendor/, which is read-only for the
+     * web user in the Docker image — so saving ANY frontend section died with
+     * "…/HTMLPurifier/DefinitionCache/Serializer not writable". Point it at
+     * storage/ instead, and if even that is not writable, run with the
+     * definition cache switched off rather than failing the save.
+     */
+    protected function purifier()
+    {
+        $config    = \HTMLPurifier_Config::createDefault();
+        $cachePath = storage_path('app/purifier');
+
+        if (!is_dir($cachePath)) {
+            @mkdir($cachePath, 0775, true);
+        }
+
+        if (is_dir($cachePath) && is_writable($cachePath)) {
+            $config->set('Cache.SerializerPath', $cachePath);
+        } else {
+            $config->set('Cache.DefinitionImpl', null);
+        }
+
+        return new \HTMLPurifier($config);
+    }
+
     public function frontendContent(Request $request, $key)
     {
-        $purifier = new \HTMLPurifier();
+        $purifier = $this->purifier();
         $valInputs = $request->except('_token', 'image_input', 'key', 'status', 'type', 'id');
         foreach ($valInputs as $keyName => $input) {
             if (gettype($input) == 'array') {
