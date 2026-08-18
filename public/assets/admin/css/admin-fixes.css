@@ -1,0 +1,83 @@
+/* =============================================================
+   Admin overrides — loaded after app.css
+   ============================================================= */
+
+/* ---------- image upload widget ----------
+   The upload button (.avatar-edit) is absolutely positioned at the right edge
+   of .thumb, which is a flex item with width:220px and the default
+   flex-shrink:1. When the surrounding column is narrower than 220px the thumb
+   collapses, the button lands at a negative x, and .body-wrapper's
+   overflow-x:hidden clips it away entirely — no visible upload control, which
+   is what iPhone Safari showed while wider Android/desktop layouts were fine.
+
+   Three changes make it width-proof:
+     1. the thumb never shrinks below its content
+     2. the preview scales down instead of overflowing on very narrow screens
+     3. the button sits INSIDE the preview, so nothing can clip it
+*/
+.payment-method-item .payment-method-header .thumb,
+.image-upload .thumb {
+    flex-shrink: 0;
+    max-width: 100%;
+}
+
+.payment-method-item .payment-method-header .thumb .profilePicPreview,
+.image-upload .thumb .profilePicPreview {
+    max-width: 100%;
+}
+
+.payment-method-item .payment-method-header .thumb .avatar-edit,
+.image-upload .thumb .avatar-edit {
+    /* was bottom:-15px; right:0 — hanging outside the thumb and clippable */
+    bottom: 10px;
+    right: 10px;
+    z-index: 2;
+}
+
+/* The file input is what iOS actually opens. Keeping it zero-width made the
+   label unreliable there, so stretch it invisibly across the button instead:
+   the input itself is the tap target on every platform. */
+.payment-method-item .payment-method-header .thumb .avatar-edit,
+.image-upload .thumb .avatar-edit {
+    position: absolute;
+    width: 45px;
+    height: 45px;
+}
+
+.payment-method-item .payment-method-header .thumb .avatar-edit .profilePicUpload,
+.image-upload .thumb .avatar-edit .profilePicUpload {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    font-size: 0;
+    z-index: 3;
+    cursor: pointer;
+}
+
+.payment-method-item .payment-method-header .thumb .avatar-edit label,
+.image-upload .thumb .avatar-edit label {
+    position: absolute;
+    inset: 0;
+    width: 45px;
+    height: 45px;
+    margin: 0;
+    line-height: 45px;
+    z-index: 2;
+    /* a plain tap must not be swallowed as a text selection on iOS */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* On narrow screens give the whole widget room and keep it inside the card. */
+@media (max-width: 575px) {
+    .payment-method-item .payment-method-header {
+        justify-content: center;
+    }
+    .payment-method-item .payment-method-header .content {
+        width: 100%;
+        padding-left: 0;
+    }
+}

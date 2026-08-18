@@ -114,7 +114,7 @@
                                 </div>
                                 <div class="avatar-edit">
                                     <input type="file" class="profilePicUpload" name="image" id="profilePicUpload1"
-                                        accept=".png, .jpg, .jpeg">
+                                        accept="image/png, image/jpeg, .png, .jpg, .jpeg">
                                     <label for="profilePicUpload1" class="bg--primary">@lang('Upload
                                         Image')</label>
                                     <small class="mt-2 text-facebook">@lang('Supported files'):
@@ -176,7 +176,7 @@
                                 </div>
                                 <div class="avatar-edit">
                                     <input type="file" class="profilePicUpload" name="image" id="profilePicUpload2"
-                                        accept=".png, .jpg, .jpeg">
+                                        accept="image/png, image/jpeg, .png, .jpg, .jpeg">
                                     <label for="profilePicUpload2" class="bg--primary">@lang('Upload
                                         Image')</label>
                                     <small class="mt-2 text-facebook">@lang('Supported files'):

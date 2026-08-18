@@ -16,7 +16,7 @@
                                         <div class="profilePicPreview" style="background-image: url('{{getImage(imagePath()['gateway']['path'].'/'. $method->image,imagePath()['gateway']['path'])}}')"></div>
                                     </div>
                                     <div class="avatar-edit">
-                                        <input type="file" name="image" class="profilePicUpload" id="image" accept=".png, .jpg, .jpeg"/>
+                                        <input type="file" name="image" class="profilePicUpload" id="image" accept="image/png, image/jpeg, .png, .jpg, .jpeg"/>
                                         <label for="image" class="bg--primary"><i class="la la-pencil"></i></label>
                                     </div>
                                 </div>

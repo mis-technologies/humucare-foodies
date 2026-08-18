@@ -265,7 +265,7 @@
                                         </div>
                                         <div class="avatar-edit">
                                             <input type="file" name="image" class="profilePicUpload" id="image"
-                                                accept=".png, .jpg, .jpeg" />
+                                                accept="image/png, image/jpeg, .png, .jpg, .jpeg" />
                                             <label for="image" class="bg--primary"><i class="la la-pencil"></i></label>
                                         </div>
                                     </div>
@@ -361,7 +361,7 @@
                                 </div>
                             </div>
                             <div class="avatar-edit">
-                                <input type="file" class="profilePicUpload" name="files[]" id="${randomId}" accept=".png, .jpg, .jpeg">
+                                <input type="file" class="profilePicUpload" name="files[]" id="${randomId}" accept="image/png, image/jpeg, .png, .jpg, .jpeg">
                                 <label for="${randomId}" class="bg--success">@lang('Upload Image')</label>
                                 <small class="mt-2 text-facebook">@lang('Supported files'): <b>@lang('jpeg'), @lang('jpg'), @lang('png').</b> @lang('Image will be resized into') {{  imagePath()['product']['gallery']['size'] }}@lang('px') </small>
                             </div>

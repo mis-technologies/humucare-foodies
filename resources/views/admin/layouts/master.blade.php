@@ -38,6 +38,8 @@
     <link rel="stylesheet" href="{{asset('assets/admin/css/vendor/bootstrap-pincode-input.css')}}">
     <!-- dashdoard main css -->
     <link rel="stylesheet" href="{{asset('assets/admin/css/app.css')}}">
+    {{-- loaded after app.css so it can correct the vendor rules --}}
+    <link rel="stylesheet" href="{{asset('assets/admin/css/admin-fixes.css')}}?v=1">
 
 
     @stack('style')

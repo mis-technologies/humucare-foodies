@@ -17,7 +17,7 @@
                                     </div>
                                     <div class="avatar-edit">
                                         <input type="file" name="image" class="profilePicUpload" id="image"
-                                            accept=".png, .jpg, .jpeg" />
+                                            accept="image/png, image/jpeg, .png, .jpg, .jpeg" />
                                         <label for="image" class="bg--primary"><i class="la la-pencil"></i></label>
                                     </div>
                                 </div>
