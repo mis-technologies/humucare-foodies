@@ -63,7 +63,7 @@
                                             </div>
                                             <div class="avatar-edit">
                                                 <input type="file" class="profilePicUpload" name="image"
-                                                    id="profilePicUpload1" accept=".png, .jpg, .jpeg">
+                                                    id="profilePicUpload1" accept="image/png, image/jpeg, .png, .jpg, .jpeg">
                                                 <label for="profilePicUpload1" class="bg--success">@lang('Upload
                                                     Image')</label>
                                                 <small class="mt-2 text-facebook">@lang('Supported files'):

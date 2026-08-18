@@ -32,7 +32,7 @@
                                             </div>
                                         </div>
                                         <div class="avatar-edit">
-                                            <input type="file" class="profilePicUpload" id="profilePicUpload1" accept=".png, .jpg, .jpeg" name="logo">
+                                            <input type="file" class="profilePicUpload" id="profilePicUpload1" accept="image/png, image/jpeg, .png, .jpg, .jpeg" name="logo">
                                             <label for="profilePicUpload1" class="bg--primary">@lang('Select Logo') </label>
                                         </div>
                                     </div>
