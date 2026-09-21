@@ -103,7 +103,12 @@ class PaymentController extends Controller {
 
         if ($deposit->method_code >= 1000) {
 
-            $this->userDataUpdate($deposit);
+            // userDataUpdate() takes a trx STRING — it does
+            // Deposit::where('trx', $trx). Passing the model matched nothing, so
+            // $data came back null and the next line read ->order_id on it: every
+            // manual/bank-transfer confirmation 500'd and the payment was never
+            // recorded. Every other caller in the codebase passes ->trx.
+            $this->userDataUpdate($deposit->trx);
             $notify[] = ['success', 'Your deposit request is queued for approval.'];
             return back()->withNotify($notify);
         }
