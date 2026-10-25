@@ -156,14 +156,23 @@ class PaymentController extends Controller {
         $order   = Order::where('id', $data->order_id)->where('order_status', 0)->first();
         $user    = User::find($data->user_id);
 
-        if ($data->status == 0) {
+        if ($data->status == 0 && $order) {
             $data->status = 1;
             $data->save();
 
             $order->payment_status = 1;
             $order->save();
 
-            $carts = Cart::where('user_id', $user->id)->get();
+            // Guest (user_id 0): User::find() is null and the old code fataled on
+            // $user->id after the card was charged, so the order got no lines and
+            // nobody was told. Guest lines were recorded at checkout; take stock now.
+            if (!$user) {
+                foreach ($order->orderDetail as $detail) {
+                    Product::where('id', $detail->product_id)->decrement('quantity', $detail->quantity);
+                }
+            }
+
+            $carts = $user ? Cart::where('user_id', $user->id)->get() : collect();
 
             foreach ($carts as $cart) {
 
@@ -185,7 +194,7 @@ class PaymentController extends Controller {
             }
 
             $adminNotification            = new AdminNotification();
-            $adminNotification->user_id   = $user->id;
+            $adminNotification->user_id   = $user->id ?? 0;
             $adminNotification->title     = 'Order successfully done via ' . $data->gatewayCurrency()->name;
             $adminNotification->click_url = urlPath('admin.orders.detail', $order->id);
             $adminNotification->save();
@@ -193,7 +202,7 @@ class PaymentController extends Controller {
             $transaction               = new Transaction();
             $transaction->user_id      = $data->user_id;
             $transaction->amount       = $data->amount;
-            $transaction->post_balance = $user->balance;
+            $transaction->post_balance = $user->balance ?? 0;
             $transaction->charge       = $data->charge;
             $transaction->trx_type     = '-';
             $transaction->details      = 'Order successfully done via ' . $data->gatewayCurrency()->name;
@@ -204,10 +213,13 @@ class PaymentController extends Controller {
             // rethrows on any transport failure and sendEmail() does not catch,
             // so an unreachable mail server would 500 the customer AFTER their
             // card was charged. Log it and let the order stand.
+            // Tell the restaurant (only cash-on-delivery orders did before).
+            notifyAdminNewOrder($order);
+
             try {
-                notify($user, 'ORDER_COMPLETE', [
+                notify($user ?: guestRecipient($order), 'ORDER_COMPLETE', [
                     'method_name'     => 'Order successfully done via ' . $data->gatewayCurrency()->name,
-                    'user_name'       => $user->username,
+                    'user_name'       => $user ? $user->username : $order->customer_name,
                     'subtotal'        => showAmount($order->subtotal),
                     'total'           => showAmount($order->total),
                     'shipping_charge' => showAmount($order->shipping_charge),
@@ -242,8 +254,8 @@ class PaymentController extends Controller {
     public function manualDepositUpdate(Request $request) {
         $track = session()->get('Track');
         $data  = Deposit::with('gateway')->where('status', 0)->where('trx', $track)->first();
-        $order = Order::where('id', $data->order_id)->where('order_status', 0)->first();
-        if (!$data) {
+        $order = $data ? Order::where('id', $data->order_id)->where('order_status', 0)->first() : null;
+        if (!$data || !$order) {
             return redirect()->route(gatewayRedirectUrl());
         }
 
@@ -354,8 +366,17 @@ class PaymentController extends Controller {
 
 
 
+        if (!Auth::check()) {
+            // Guest lines were recorded at checkout; reserve the stock and empty
+            // the session cart now the transfer details are submitted.
+            foreach ($order->orderDetail as $detail) {
+                Product::where('id', $detail->product_id)->decrement('quantity', $detail->quantity);
+            }
+            session()->forget(['cart', 'total']);
+        }
+
         $adminNotification            = new AdminNotification();
-        $adminNotification->user_id   = $user->id ?? 'null';
+        $adminNotification->user_id   = $user->id ?? 0;
         $adminNotification->title     = 'Order successfully done via ' . $data->gatewayCurrency()->name;
         $adminNotification->click_url = urlPath('admin.orders.detail', $order->id);
         $adminNotification->save();
@@ -380,6 +401,26 @@ class PaymentController extends Controller {
 
         }
 
+
+        notifyAdminNewOrder($order);
+
+        if (!Auth::check()) {
+            try {
+                notify(guestRecipient($order), 'ORDER_COMPLETE', [
+                    'method_name'     => 'Order placed via ' . $data->gatewayCurrency()->name . ' (awaiting verification)',
+                    'user_name'       => $order->customer_name,
+                    'subtotal'        => showAmount($order->subtotal),
+                    'total'           => showAmount($order->total),
+                    'shipping_charge' => showAmount($order->shipping_charge),
+                    'currency'        => GeneralSetting::first()->cur_text,
+                    'order_no'        => $order->order_no,
+                ]);
+            } catch (\Throwable $e) {
+                \Log::error('Guest order email failed (manual gateway): ' . $e->getMessage());
+            }
+            session()->put('confirm_order_id', $order->id);
+            return redirect()->route('order.confirmation');
+        }
 
         $notify[] = ['success', 'Your payment request has been processed.'];
         return redirect()->route('user.order.history')->withNotify($notify);

@@ -448,7 +448,10 @@ Route::name('user.')->prefix('user')->group(function () {
 
         Route::post('/checkout/order', 'CheckoutController@order')->name('checkout.order');
 
-        Route::post('/checkout', 'CheckoutController@checkout')->name('checkout');
+        // GET too: payment gateways send shoppers back here when they cancel or a
+        // payment fails (Stripe's cancel_url, error redirects via gatewayRedirectUrl()).
+        // POST-only made that a 405 "GET method is not supported" error page.
+        Route::match(['get', 'post'], '/checkout', 'CheckoutController@checkout')->name('checkout');
         Route::post('/milCheckout', 'CheckoutController@milCheckout')->name('mil.checkout');
         Route::get('/homeservice', 'CartController@alert')->name('alert');
 });
@@ -456,6 +459,10 @@ Route::name('user.')->prefix('user')->group(function () {
 
 Route::get('/contact', 'SiteController@contact')->name('contact');
 Route::post('/contact', 'SiteController@contactSubmit');
+
+// "Thank you" page after checkout and payment gateways. Public so guests get it;
+// it only shows the order held in the visitor's own session.
+Route::get('/order/confirmation', 'CheckoutController@confirmation')->name('order.confirmation');
 
 // Must stay ABOVE the `/{slug}` catch-all further down, or that route swallows
 // the single-segment GET and the page 404s.

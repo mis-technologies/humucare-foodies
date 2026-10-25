@@ -33,7 +33,8 @@
                                 </td>
                                 @else
                                 <td data-label="@lang('User')">
-                                    <a href="#">Anonymous</a><br>User
+                                    {{ $order->customer_name ?: __('Guest') }} <span class="badge badge--dark">@lang('Guest')</span>
+                                    <br>{{ $order->customer_mobile ?: $order->customer_email }}
                                 </td>
                                 @endif
 

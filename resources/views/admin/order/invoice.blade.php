@@ -383,13 +383,13 @@
                                 <li>
                                     <div class="list list--row" style="--gap: 0.5rem">
                                         <span class="strong">@lang('Name'):</span>
-                                        <span>{{ __($order->user->fullname) }}</span>
+                                        <span>{{ __(optional($order->user)->fullname ?: $order->customer_name) }}</span>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="list list--row" style="--gap: 0.5rem">
                                         <span class="strong">@lang('Phone') :</span>
-                                        <span>{{ __($order->user->mobile) }}</span>
+                                        <span>{{ __(optional($order->user)->mobile ?: $order->customer_mobile) }}</span>
                                     </div>
                                 </li>
                                 <li>

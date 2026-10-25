@@ -3,7 +3,16 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{-- viewport-fit=cover lets the page paint under the notch and home
+         indicator; without it every env(safe-area-inset-*) resolves to 0px.
+         interactive-widget makes Android shrink the viewport for the keyboard,
+         matching iOS, so bottom-pinned UI reacts the same on both. --}}
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    {{-- status bar / browser chrome colour: match the top of the page, which is
+         the white header, not the brand amber --}}
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14142e">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
     @include('partials.seo')
