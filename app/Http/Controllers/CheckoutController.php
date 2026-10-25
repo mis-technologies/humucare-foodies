@@ -335,6 +335,22 @@ class CheckoutController extends Controller {
 
     protected function cartSubTotal($user_id) {
 
+        // Guests keep their cart in the session, not the carts table (where
+        // user_id = null matched nothing, so a guest returning from a cancelled
+        // card payment hit a 404 "empty cart" instead of their checkout).
+        if (!$user_id) {
+            $total = 0;
+            foreach ((array) session()->get('cart', []) as $item) {
+                $product = Product::active()->where('id', $item['product_id'] ?? 0)->first();
+                if (!$product) {
+                    continue;
+                }
+                $price  = productPrice($product) + (float) ($item['options_price'] ?? 0);
+                $total += $price * (int) ($item['quantity'] ?? 0);
+            }
+            return $total;
+        }
+
         $carts = Cart::where('user_id', $user_id)->with('product')->get();
 
         $total = [0];
