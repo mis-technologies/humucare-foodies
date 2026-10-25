@@ -460,6 +460,10 @@ Route::name('user.')->prefix('user')->group(function () {
 Route::get('/contact', 'SiteController@contact')->name('contact');
 Route::post('/contact', 'SiteController@contactSubmit');
 
+// "Thank you" page after checkout and payment gateways. Public so guests get it;
+// it only shows the order held in the visitor's own session.
+Route::get('/order/confirmation', 'CheckoutController@confirmation')->name('order.confirmation');
+
 // Must stay ABOVE the `/{slug}` catch-all further down, or that route swallows
 // the single-segment GET and the page 404s.
 Route::get('/special-request', 'SpecialRequestController@index')->name('special.request');

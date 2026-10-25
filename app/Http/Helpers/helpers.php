@@ -914,7 +914,8 @@ function getContent($data_keys, $singleQuery = false, $limit = null, $orderById 
 function gatewayRedirectUrl($type = false) {
 
     if ($type) {
-        return 'user.order.history';
+        // Works for guests too; signed-in shoppers are forwarded to My Orders.
+        return 'order.confirmation';
     } else {
         return 'user.checkout';
     }
@@ -1089,6 +1090,24 @@ function optionSummary($options) {
  * Goes to adminNotifyAddress() (the admin account, not the noreply sender),
  * using the ADMIN_NEW_ORDER template. Never let a mail failure break checkout.
  */
+/**
+ * An unsaved User carrying a guest order's contact details, so notify() /
+ * sendEmail() (which expect a user) can send the guest their receipt.
+ */
+function guestRecipient($order) {
+    $parts = preg_split('/\s+/', trim((string) $order->customer_name), 2);
+
+    $guest            = new \App\Models\User();
+    $guest->id        = 0;
+    $guest->firstname = $parts[0] ?? '';
+    $guest->lastname  = $parts[1] ?? '';
+    $guest->username  = $parts[0] ?? 'Guest';
+    $guest->email     = $order->customer_email;
+    $guest->mobile    = $order->customer_mobile;
+
+    return $guest;
+}
+
 function notifyAdminNewOrder($order) {
     try {
         $general = GeneralSetting::first();
@@ -1121,7 +1140,8 @@ function notifyAdminNewOrder($order) {
 
         $shortCodes = [
             'order_no'    => $order->order_no,
-            'user_name'   => optional($order->user)->username ?: 'Guest',
+            'user_name'   => optional($order->user)->username
+                ?: trim(($order->customer_name ?: 'Guest') . ' ' . ($order->customer_mobile ?: '')),
             'method_name' => $order->payment_type == 1 ? 'Online payment' : 'Cash on delivery',
             'total'       => showAmount($order->total),
             'currency'    => $general->cur_sym,

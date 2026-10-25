@@ -196,7 +196,13 @@ class CheckoutController extends Controller {
 
 
         if (!Auth::check()) {
-            $subtotal   =0;
+            // Priced on the server from the session cart. The old code used 0 here
+            // and then trusted a hidden "price" form field, which a guest could edit.
+            $subtotal = $this->cartSubTotal(null);
+            if ($subtotal <= 0 && !$request->has('hs_price')) {
+                $notify[] = ['error', 'Your cart is empty.'];
+                return redirect()->route('cart')->withNotify($notify);
+            }
         }
 
 
@@ -231,12 +237,6 @@ class CheckoutController extends Controller {
 
 
         }
-        if (!Auth::check() && $request->has('price')) {
-
-            $grandTotal = $request->price + $shippingPrice;
-
-        }
-
         $address = $fulfilment === 'collection'
             ? ['type' => 'collection']
             : [
@@ -249,6 +249,9 @@ class CheckoutController extends Controller {
 
         $order                  = new Order();
         $order->user_id         = $user->id ?? 0;
+        $order->customer_name   = trim($request->firstname . ' ' . $request->lastname);
+        $order->customer_email  = $request->email;
+        $order->customer_mobile = $request->mobile;
         $order->order_no        = getTrx();
         $order->subtotal        = $subtotal;
         $order->discount        = $discount ?? 0;
@@ -264,7 +267,12 @@ class CheckoutController extends Controller {
             $order->save();
             session()->put('order_id', $order->id);
 
-            $test = "The test value";
+            if (!Auth::check()) {
+                // Stock and the session cart are settled once payment succeeds
+                // (PaymentController::userDataUpdate + the confirmation page).
+                $this->recordGuestItems($order, false);
+                session()->put('confirm_order_id', $order->id);
+            }
 
             return redirect()->route('user.deposit');
         }
@@ -301,6 +309,11 @@ class CheckoutController extends Controller {
             }
         }
 
+        if (!Auth::check()) {
+            $this->recordGuestItems($order, true);
+            session()->put('confirm_order_id', $order->id);
+        }
+
         $adminNotification            = new AdminNotification();
         $adminNotification->user_id   = $user->id ?? 0;
         $adminNotification->title     = 'Order successfully done via Cash on delivery.';
@@ -329,8 +342,98 @@ class CheckoutController extends Controller {
             }
         }
 
+        if (!Auth::check()) {
+            try {
+                notify(guestRecipient($order), 'ORDER_COMPLETE', [
+                    'method_name'     => 'Order successfully done via Cash on delivery.',
+                    'user_name'       => $order->customer_name,
+                    'subtotal'        => showAmount($subtotal),
+                    'shipping_charge' => showAmount($shippingPrice),
+                    'total'           => showAmount($grandTotal),
+                    'currency'        => GeneralSetting::first()->cur_text,
+                    'order_no'        => $order->order_no,
+                ]);
+            } catch (\Throwable $e) {
+                \Log::error('Guest order email failed: ' . $e->getMessage());
+            }
+
+            // Guests have no "My Orders" page (it needs an account).
+            return redirect()->route('order.confirmation');
+        }
+
         $notify[] = ['success', 'Order successfully completed.'];
         return redirect()->route('user.order.history')->withNotify($notify);
+    }
+
+    /**
+     * Copy a guest's session cart onto the order as order lines.
+     * $settle = true also takes the stock and empties the cart (cash on delivery);
+     * card payments settle after the payment is confirmed.
+     */
+    protected function recordGuestItems(Order $order, bool $settle) {
+        foreach ((array) session()->get('cart', []) as $item) {
+            $product = Product::active()->where('id', $item['product_id'] ?? 0)->first();
+            if (!$product) {
+                continue;
+            }
+            $quantity = (int) ($item['quantity'] ?? 0);
+            if ($quantity < 1) {
+                continue;
+            }
+
+            $orderDetail             = new OrderDetail();
+            $orderDetail->order_id   = $order->id;
+            $orderDetail->product_id = $product->id;
+            $orderDetail->quantity   = $quantity;
+            $orderDetail->price      = productPrice($product) + (float) ($item['options_price'] ?? 0);
+            $orderDetail->options    = !empty($item['options']) ? (array) $item['options'] : null;
+            $orderDetail->save();
+
+            if ($settle) {
+                $product->decrement('quantity', $quantity);
+            }
+        }
+
+        if ($settle) {
+            session()->forget(['cart', 'total']);
+        }
+    }
+
+    /**
+     * "Thank you" page after checkout. Guests only ever see the order stored in
+     * their own session (no order id in the URL), signed-in shoppers go on to
+     * My Orders as before.
+     */
+    public function confirmation(Request $request) {
+        if (Auth::check()) {
+            session()->reflash(); // keep the gateway's success message
+            return redirect()->route('user.order.history');
+        }
+
+        $order = Order::with('orderDetail.product')->find(session()->get('confirm_order_id'));
+        if (!$order) {
+            return redirect()->route('home');
+        }
+
+        // Online payment confirmed (gateways confirm before redirecting, or the
+        // Stripe webhook lands a moment later): the cart has done its job.
+        $paid = $order->payment_type == 1 && $order->payment_status == 1;
+        if ($paid) {
+            session()->forget(['cart', 'total', 'order_id']);
+        }
+
+        // Bank transfer: submitted, waiting for the restaurant to verify it.
+        $deposit          = \App\Models\Deposit::where('order_id', $order->id)->latest('id')->first();
+        $awaitingTransfer = !$paid && $deposit && $deposit->status == 2;
+
+        // Card paid but the gateway's webhook hasn't landed yet: re-check a few times.
+        $pending   = $order->payment_type == 1 && !$paid && !$awaitingTransfer;
+        $checks    = min((int) $request->query('check', 0), 10);
+        $pageTitle = 'Order confirmed';
+        $address   = json_decode($order->address ?: '[]');
+
+        return view($this->activeTemplate . 'order_confirmation',
+            compact('pageTitle', 'order', 'pending', 'awaitingTransfer', 'checks', 'address'));
     }
 
     protected function cartSubTotal($user_id) {

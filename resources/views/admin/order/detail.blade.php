@@ -11,11 +11,19 @@
                             alt="@lang('Profile Image')" class="b-radius--10 w-100">
                     </div>
                     <div class="mt-15">
+                        @if ($order->user)
                         <h4 class="">{{ @$order->user->fullname }}</h4>
                         <p class="">{{ @$order->user->email }}</p>
                         <span class="text--small">@lang('Joined At')
                             <strong>{{ showDateTime(@$order->user->created_at, 'd M, Y h:i A') }}</strong>
                         </span>
+                        @else
+                        {{-- Guest checkout: contact details saved on the order itself --}}
+                        <h4 class="">{{ $order->customer_name ?: __('Guest') }}</h4>
+                        <p class="mb-1">{{ $order->customer_email }}</p>
+                        <p class="mb-1">{{ $order->customer_mobile }}</p>
+                        <span class="text--small">@lang('Guest checkout')</span>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -34,9 +42,16 @@
                 </a>
                 @else
 
-                <a href="#" class="btn btn--info btn--shadow btn-block btn-lg">
-                    Anonymous Mail
+                @if ($order->customer_email)
+                <a href="mailto:{{ $order->customer_email }}?subject={{ rawurlencode('Your order ' . $order->order_no) }}" class="btn btn--info btn--shadow btn-block btn-lg">
+                    @lang('Email customer')
                 </a>
+                @endif
+                @if ($order->customer_mobile)
+                <a href="tel:{{ preg_replace('/[^0-9+]/', '', $order->customer_mobile) }}" class="btn btn--dark btn--shadow btn-block btn-lg">
+                    @lang('Call customer')
+                </a>
+                @endif
                 @endif
             </div>
         </div>
