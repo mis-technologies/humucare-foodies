@@ -1,4 +1,83 @@
 /* =============================================================
+   PLATFORM BASELINE — the layer that decides whether this reads
+   as an installed app or a website in a browser. Must stay first
+   so component rules below can override it.
+   ============================================================= */
+
+html {
+    /* iOS/Android paint a grey box over anything tapped. It is the
+       loudest "this is a web page" tell, and it fights our own
+       press feedback. Removed here; :active below replaces it. */
+    -webkit-tap-highlight-color: transparent;
+    /* stop Safari inflating type when the phone is rotated */
+    -webkit-text-size-adjust: 100%;
+}
+
+html, body {
+    /* no pull-to-refresh / whole-page rubber band stealing a drag */
+    overscroll-behavior-y: none;
+}
+
+/* Controls: tap must register immediately and must not be selectable.
+   touch-action removes the ~300ms double-tap-zoom wait; user-select stops
+   iOS selecting a button's label on long-press, which no native control does. */
+button,
+a,
+[role="button"],
+.fd-btn,
+.fd-card__add,
+.fd-icon-btn,
+.fd-qty__btn,
+.fd-chip,
+.fd-tab,
+.fd-burger,
+.fd-call-fab {
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+
+/* Press feedback belongs on the press, not the release — a control that
+   only reacts on click reads as laggy even at 0ms. */
+.fd-btn:active,
+.fd-card__add:active,
+.fd-icon-btn:active,
+.fd-qty__btn:active,
+.fd-call-fab:active,
+.fd-sum__checkout:active {
+    transform: scale(.97);
+    transition: transform 100ms ease-out;
+}
+
+
+
+
+
+/* Horizontal rails: claim the horizontal axis, leave vertical to the browser,
+   and let the platform's own scroll physics do the snapping. */
+.fd-menu-scroll,
+.fd-specials {
+    touch-action: pan-y;
+}
+
+/* Reduced motion is a gentler equivalent, not "no feedback": keep opacity and
+   colour changes, drop travel and overshoot. */
+@media (prefers-reduced-motion: reduce) {
+    .fd-card,
+    .fd-chip,
+    .fd-card__media img,
+    .fd-card__tools {
+        transition-duration: .01ms !important;
+    }
+    .fd-card:hover,
+    .fd-chip:hover {
+        transform: none !important;
+    }
+}
+
+/* =============================================================
    Foodies — UI Revamp layer
    Loaded AFTER main.css + color.php. Owns the storefront redesign.
    New components use new class names; a few shared classes
@@ -77,13 +156,15 @@ a { text-decoration: none; }
     transition: transform .18s ease, box-shadow .18s ease, background .18s ease !important;
     cursor: pointer;
 }
-.cmn--btn:hover,
-.btn--base:hover,
-.fd-btn:hover {
-    background: var(--fd-amber-d) !important;
-    color: #fff !important;
-    transform: translateY(-2px);
-    box-shadow: 0 16px 30px -12px rgba(245, 166, 35, .8) !important;
+@media (hover: hover) and (pointer: fine) {
+    .cmn--btn:hover,
+    .btn--base:hover,
+    .fd-btn:hover {
+        background: var(--fd-amber-d) !important;
+        color: #fff !important;
+        transform: translateY(-2px);
+        box-shadow: 0 16px 30px -12px rgba(245, 166, 35, .8) !important;
+    }
 }
 .fd-btn--lg { padding: 17px 34px !important; font-size: 16px !important; }
 .fd-btn--pill { border-radius: 999px !important; }
@@ -93,13 +174,17 @@ a { text-decoration: none; }
     background: linear-gradient(180deg, #ffc023 0%, #f0a010 100%) !important;
     box-shadow: 0 16px 34px -14px rgba(240, 160, 16, .95) !important;
 }
-.fd-btn--xl:hover { background: linear-gradient(180deg, #f7b41c 0%, #e08e12 100%) !important; }
+@media (hover: hover) and (pointer: fine) {
+    .fd-btn--xl:hover { background: linear-gradient(180deg, #f7b41c 0%, #e08e12 100%) !important; }
+}
 .fd-btn--ghost {
     background: transparent !important;
     color: var(--fd-amber) !important;
     box-shadow: inset 0 0 0 2px var(--fd-amber) !important;
 }
-.fd-btn--ghost:hover { background: var(--fd-amber) !important; color: #fff !important; }
+@media (hover: hover) and (pointer: fine) {
+    .fd-btn--ghost:hover { background: var(--fd-amber) !important; color: #fff !important; }
+}
 .fd-btn--light {
     background: #fff !important;
     color: var(--fd-indigo) !important;
@@ -230,7 +315,9 @@ a { text-decoration: none; }
     color: #ffc023;
     font-size: 19px;
 }
-.fd-header .fd-icon-btn:hover { background: var(--fd-amber); color: #fff; transform: translateY(-2px); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-header .fd-icon-btn:hover { background: var(--fd-amber); color: #fff; transform: translateY(-2px); }
+}
 .fd-header .fd-icon-btn--user { color: #fff; }
 .fd-header .fd-icon-btn .qty {
     background: var(--fd-amber);
@@ -262,7 +349,9 @@ a { text-decoration: none; }
     border-radius: 10px;
     transition: color .15s ease, background .15s ease;
 }
-.fd-nav a:hover { color: var(--fd-amber); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-nav a:hover { color: var(--fd-amber); }
+}
 .fd-nav a.active {
     color: var(--fd-indigo);
     background: rgba(27, 27, 158, .06);
@@ -285,7 +374,9 @@ a { text-decoration: none; }
     font-size: 18px;
     transition: background .15s ease, color .15s ease, transform .15s ease;
 }
-.fd-icon-btn:hover { background: var(--fd-amber); color: #fff; transform: translateY(-2px); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-icon-btn:hover { background: var(--fd-amber); color: #fff; transform: translateY(-2px); }
+}
 .fd-icon-btn .qty {
     position: absolute;
     top: -6px;
@@ -321,7 +412,9 @@ a { text-decoration: none; }
     font-size: 18px;
 }
 .fd-user a { color: var(--fd-ink); }
-.fd-user a:hover { color: var(--fd-amber); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-user a:hover { color: var(--fd-amber); }
+}
 .fd-burger {
     display: none;
     flex-direction: column;
@@ -441,7 +534,9 @@ a { text-decoration: none; }
     cursor: pointer;
     transition: background .15s ease;
 }
-.fd-hero__search button:hover { background: #14147e; }
+@media (hover: hover) and (pointer: fine) {
+    .fd-hero__search button:hover { background: #14147e; }
+}
 
 /* (the old arched-media block lived here; superseded by the full-bleed
    curved panel defined with .fd-hero above) */
@@ -478,7 +573,9 @@ a { text-decoration: none; }
     font-weight: 500;
     color: var(--fd-amber);
 }
-.fd-shead__link:hover { color: var(--fd-amber-d); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-shead__link:hover { color: var(--fd-amber-d); }
+}
 
 /* =============================================================
    MENU TABS + FOOD GRID
@@ -505,7 +602,9 @@ a { text-decoration: none; }
     appearance: none;
 }
 .fd-tab:focus-visible { outline: 2px solid var(--fd-amber); outline-offset: 4px; border-radius: 4px; }
-.fd-tab:hover { color: #fff; }
+@media (hover: hover) and (pointer: fine) {
+    .fd-tab:hover { color: #fff; }
+}
 .fd-tab.active { color: #fff; }
 .fd-tab.active::after {
     content: "";
@@ -549,7 +648,9 @@ a { text-decoration: none; }
     box-shadow: 0 12px 26px -10px rgba(245, 166, 35, .9);
     transition: background .15s ease, transform .15s ease, opacity .2s ease;
 }
-.fd-menu__arrow:hover { background: var(--fd-amber-d); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-menu__arrow:hover { background: var(--fd-amber-d); }
+}
 .fd-menu__arrow--prev { left: -18px; }
 .fd-menu__arrow--next { right: -18px; }
 .fd-menu__arrow.is-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -573,7 +674,9 @@ a { text-decoration: none; }
     padding: 24px;
     transition: border-color .15s ease, background .15s ease;
 }
-.fd-menu-more:hover { border-color: var(--fd-amber); background: rgba(245, 166, 35, .08); color: #fff; }
+@media (hover: hover) and (pointer: fine) {
+    .fd-menu-more:hover { border-color: var(--fd-amber); background: rgba(245, 166, 35, .08); color: #fff; }
+}
 .fd-menu-more__ic {
     width: 54px; height: 54px; border-radius: 50%;
     background: var(--fd-amber); color: #fff;
@@ -589,10 +692,12 @@ a { text-decoration: none; }
     border: 1px solid rgba(255, 255, 255, .14);
     box-shadow: none;
 }
-.fd-menu-scroll .fd-card:hover {
-    background: rgba(255, 255, 255, .07);
-    border-color: rgba(245, 166, 35, .55);
-    box-shadow: 0 20px 44px -24px rgba(0, 0, 0, .7);
+@media (hover: hover) and (pointer: fine) {
+    .fd-menu-scroll .fd-card:hover {
+        background: rgba(255, 255, 255, .07);
+        border-color: rgba(245, 166, 35, .55);
+        box-shadow: 0 20px 44px -24px rgba(0, 0, 0, .7);
+    }
 }
 .fd-menu-scroll .fd-card__media {
     background: rgba(255, 255, 255, .05);
@@ -600,7 +705,9 @@ a { text-decoration: none; }
 }
 .fd-menu-scroll .fd-card__rating { color: #fff; }
 .fd-menu-scroll .fd-card__title a { color: #fff; }
-.fd-menu-scroll .fd-card__title a:hover { color: var(--fd-amber); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-menu-scroll .fd-card__title a:hover { color: var(--fd-amber); }
+}
 .fd-menu-scroll .fd-card__price { color: var(--fd-amber); }
 .fd-menu-scroll .fd-card__price del { color: rgba(255, 255, 255, .5); }
 .fd-menu-scroll .fd-card__tag { background: var(--fd-amber); color: #fff; }
@@ -611,10 +718,12 @@ a { text-decoration: none; }
     color: #fff !important;
     box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .55) !important;
 }
-.fd-menu-scroll .fd-card__add:hover {
-    background: var(--fd-amber) !important;
-    color: #fff !important;
-    box-shadow: inset 0 0 0 1.5px var(--fd-amber) !important;
+@media (hover: hover) and (pointer: fine) {
+    .fd-menu-scroll .fd-card__add:hover {
+        background: var(--fd-amber) !important;
+        color: #fff !important;
+        box-shadow: inset 0 0 0 1.5px var(--fd-amber) !important;
+    }
 }
 .fd-menu-scroll .fd-card__add--disabled {
     background: rgba(255, 255, 255, .06) !important;
@@ -631,8 +740,10 @@ a { text-decoration: none; }
     background: var(--fd-amber);
     color: #fff;
 }
-.fd-menu-scroll .fd-card__tools .add-wishlist:hover,
-.fd-menu-scroll .fd-card__tools .add-wishlist.active { background: var(--fd-amber-d); color: #fff; }
+@media (hover: hover) and (pointer: fine) {
+    .fd-menu-scroll .fd-card__tools .add-wishlist:hover,
+    .fd-menu-scroll .fd-card__tools .add-wishlist.active { background: var(--fd-amber-d); color: #fff; }
+}
 
 /* corner discount badge is dropped here — the struck price already shows it.
    Needs to out-specify `.fd-card__media .badge--discount`, hence 3 classes. */
@@ -652,7 +763,9 @@ a { text-decoration: none; }
     flex-direction: column;
     position: relative;
 }
-.fd-card:hover { transform: translateY(-6px); box-shadow: var(--fd-shadow); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-card:hover { transform: translateY(-6px); box-shadow: var(--fd-shadow); }
+}
 .fd-card__media {
     position: relative;
     border-radius: var(--fd-radius-sm);
@@ -661,7 +774,9 @@ a { text-decoration: none; }
     background: var(--fd-bg);
 }
 .fd-card__media img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s ease; }
-.fd-card:hover .fd-card__media img { transform: scale(1.06); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-card:hover .fd-card__media img { transform: scale(1.06); }
+}
 .fd-card__disc {
     position: absolute;
     top: 10px; left: 10px;
@@ -703,7 +818,9 @@ a { text-decoration: none; }
     transition: opacity .2s ease, transform .2s ease;
     z-index: 2;
 }
-.fd-card:hover .fd-card__tools { opacity: 1; transform: none; }
+@media (hover: hover) and (pointer: fine) {
+    .fd-card:hover .fd-card__tools { opacity: 1; transform: none; }
+}
 .fd-card__tools a {
     width: 38px; height: 38px;
     border-radius: 11px;
@@ -714,8 +831,10 @@ a { text-decoration: none; }
     box-shadow: var(--fd-shadow-sm);
     transition: background .15s ease, color .15s ease;
 }
-.fd-card__tools a:hover,
-.fd-card__tools a.active { background: var(--fd-amber); color: #fff; }
+@media (hover: hover) and (pointer: fine) {
+    .fd-card__tools a:hover,
+    .fd-card__tools a.active { background: var(--fd-amber); color: #fff; }
+}
 .fd-card__body { padding: 12px 4px 2px; display: flex; flex-direction: column; flex: 1; }
 
 /* compact single-star rating, as in the reference */
@@ -751,7 +870,9 @@ a { text-decoration: none; }
     text-transform: lowercase;
 }
 .fd-card__title a { color: var(--fd-ink); }
-.fd-card__title a:hover { color: var(--fd-amber); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-card__title a:hover { color: var(--fd-amber); }
+}
 .fd-card__stock { font-size: 12px; font-weight: 500; margin-bottom: 8px; color: #e0574a; }
 
 /* struck original price first, then the live amber price */
@@ -819,7 +940,9 @@ a { text-decoration: none; }
     transition: background .15s ease, transform .15s ease !important;
 }
 .fd-card__add i { font-size: 13px; }
-.fd-card__add:hover { background: var(--fd-amber) !important; color: #fff !important; transform: translateY(-1px); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-card__add:hover { background: var(--fd-amber) !important; color: #fff !important; transform: translateY(-1px); }
+}
 .fd-card__add--disabled {
     background: #e6e6ee !important;
     color: #a2a2b5 !important;
@@ -878,7 +1001,9 @@ a { text-decoration: none; }
     box-shadow: var(--fd-shadow-sm); transition: transform .18s ease, box-shadow .18s ease;
     color: var(--fd-ink);
 }
-.fd-chip:hover { transform: translateY(-3px); box-shadow: var(--fd-shadow); color: var(--fd-amber); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-chip:hover { transform: translateY(-3px); box-shadow: var(--fd-shadow); color: var(--fd-amber); }
+}
 .fd-chip__img { width: 52px; height: 52px; border-radius: 12px; object-fit: cover; background: var(--fd-bg); }
 .fd-chip__name { font-family: var(--fd-font-display); font-weight: 500; flex: 1; }
 
@@ -916,7 +1041,9 @@ a { text-decoration: none; }
     padding: 9px 0; margin: 0; color: var(--fd-body); font-size: 14.5px;
     transition: color .15s ease;
 }
-.fd-check:hover { color: var(--fd-ink); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-check:hover { color: var(--fd-ink); }
+}
 .fd-check input { position: absolute; opacity: 0; width: 0; height: 0; }
 .fd-check__box {
     flex: 0 0 auto; width: 20px; height: 20px; border-radius: 6px;
@@ -951,8 +1078,10 @@ a { text-decoration: none; }
     box-shadow: 0 3px 10px rgba(20,20,46,.2); cursor: grab; outline: 0;
     transition: transform .15s ease, box-shadow .15s ease;
 }
-.fd-price .ui-slider .ui-slider-handle:hover,
-.fd-price .ui-slider .ui-slider-handle:focus { transform: scale(1.18); box-shadow: 0 0 0 6px rgba(245,166,35,.18); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-price .ui-slider .ui-slider-handle:hover,
+    .fd-price .ui-slider .ui-slider-handle:focus { transform: scale(1.18); box-shadow: 0 0 0 6px rgba(245,166,35,.18); }
+}
 .fd-price__out { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--fd-muted); }
 .fd-price__out label { margin: 0; }
 .fd-price__out #amount {
@@ -974,7 +1103,9 @@ a { text-decoration: none; }
     color: var(--fd-muted); background: transparent; font-size: 15px;
     transition: background .15s ease, color .15s ease, transform .15s ease;
 }
-.fd-views li:hover { background: var(--fd-bg); color: var(--fd-ink); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-views li:hover { background: var(--fd-bg); color: var(--fd-ink); }
+}
 .fd-views li.active { background: rgba(245,166,35,.15) !important; color: var(--fd-amber-d) !important; }
 .fd-views li:active { transform: scale(.92); }
 .fd-toolbar__right { display: flex; align-items: center; gap: 10px; margin-left: auto; list-style: none; padding: 0; margin-bottom: 0; }
@@ -990,7 +1121,9 @@ a { text-decoration: none; }
     color: var(--fd-ink); cursor: pointer; outline: 0;
     transition: border-color .15s ease, box-shadow .15s ease;
 }
-.fd-select select:hover { border-color: #d2d2e0; }
+@media (hover: hover) and (pointer: fine) {
+    .fd-select select:hover { border-color: #d2d2e0; }
+}
 .fd-select select:focus { border-color: var(--fd-amber); box-shadow: 0 0 0 3px rgba(245,166,35,.16); }
 .fd-filterbtn {
     display: inline-flex; align-items: center; gap: 8px; border: 0; cursor: pointer;
@@ -1057,7 +1190,9 @@ a { text-decoration: none; }
     color: var(--fd-ink) !important; font-family: var(--fd-font-display); font-weight: 500;
     box-shadow: none !important; transition: background .15s ease, color .15s ease, transform .15s ease;
 }
-.fd-pagination .pagination li a:hover { background: var(--fd-bg) !important; transform: translateY(-2px); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-pagination .pagination li a:hover { background: var(--fd-bg) !important; transform: translateY(-2px); }
+}
 .fd-pagination .page-item.active .page-link,
 .fd-pagination .pagination li.active a,
 .fd-pagination .pagination li.active span {
@@ -1147,7 +1282,9 @@ a { text-decoration: none; }
 .fd-cart-row__info { min-width: 0; }
 .fd-cart-row__name { font-family: var(--fd-font-display); font-weight: 600; font-size: 17px; margin: 0 0 8px; }
 .fd-cart-row__name a { color: var(--fd-ink); }
-.fd-cart-row__name a:hover { color: var(--fd-amber); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-cart-row__name a:hover { color: var(--fd-amber); }
+}
 .fd-cart-row__tag {
     display: inline-block; font-family: var(--fd-font-display); font-weight: 500; font-size: 12px;
     color: #fff; background: var(--fd-amber); padding: 5px 14px; border-radius: 6px;
@@ -1156,7 +1293,9 @@ a { text-decoration: none; }
     display: block; margin-top: 10px; padding: 0; border: 0; background: none;
     color: var(--fd-muted); font-size: 14.5px; cursor: pointer; transition: color .15s ease;
 }
-.fd-cart-row__remove:hover { color: #e0574a; text-decoration: underline; }
+@media (hover: hover) and (pointer: fine) {
+    .fd-cart-row__remove:hover { color: #e0574a; text-decoration: underline; }
+}
 
 .fd-cart-row__qty { display: flex; justify-content: center; }
 .fd-qty { display: inline-flex; align-items: center; gap: 10px; }
@@ -1166,7 +1305,9 @@ a { text-decoration: none; }
     display: inline-flex; align-items: center; justify-content: center; font-size: 16px;
     transition: background .15s ease, transform .15s ease;
 }
-.fd-qty__btn:hover { background: var(--fd-amber); color: #fff; transform: translateY(-1px); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-qty__btn:hover { background: var(--fd-amber); color: #fff; transform: translateY(-1px); }
+}
 .fd-qty input {
     width: 40px; text-align: center; border: 0; background: transparent;
     font-family: var(--fd-font-display); font-weight: 600; font-size: 17px; color: var(--fd-ink);
@@ -1185,7 +1326,9 @@ a { text-decoration: none; }
     font-family: var(--fd-font-display); font-weight: 500; font-size: 19px; color: var(--fd-ink);
 }
 .fd-cart__back i { font-size: 22px; }
-.fd-cart__back:hover { color: var(--fd-amber); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-cart__back:hover { color: var(--fd-amber); }
+}
 .fd-cart__empty { text-align: center; padding: 70px 0; color: var(--fd-muted); }
 .fd-cart__empty i { font-size: 54px; color: var(--fd-line); display: block; margin-bottom: 14px; }
 .fd-cart__empty p { margin-bottom: 22px; }
@@ -1224,7 +1367,9 @@ a { text-decoration: none; }
     font-family: var(--fd-font-display); font-weight: 600; font-size: 15px;
     color: var(--fd-amber); padding: 12px 14px; transition: color .15s ease;
 }
-.fd-sum__promo button:hover { color: #fff; }
+@media (hover: hover) and (pointer: fine) {
+    .fd-sum__promo button:hover { color: #fff; }
+}
 .fd-sum__more {
     display: inline-flex; align-items: center; gap: 14px; margin: 4px 0 30px;
     color: #fff; font-size: 15.5px;
@@ -1233,7 +1378,9 @@ a { text-decoration: none; }
     width: 30px; height: 30px; border-radius: 7px; background: rgba(255,255,255,.08);
     color: var(--fd-amber); display: inline-flex; align-items: center; justify-content: center; font-size: 16px;
 }
-.fd-sum__more:hover { color: var(--fd-amber); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-sum__more:hover { color: var(--fd-amber); }
+}
 .fd-sum__total {
     display: flex; align-items: center; justify-content: space-between; gap: 14px;
     padding-top: 24px; border-top: 1px solid rgba(255,255,255,.14); margin-bottom: 26px;
@@ -1248,9 +1395,13 @@ a { text-decoration: none; }
     box-shadow: 0 16px 34px -14px rgba(240,160,16,.95);
     transition: transform .18s ease, background .18s ease;
 }
-.fd-sum__checkout:hover { transform: translateY(-2px); background: linear-gradient(180deg, #f7b41c 0%, #e08e12 100%); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-sum__checkout:hover { transform: translateY(-2px); background: linear-gradient(180deg, #f7b41c 0%, #e08e12 100%); }
+}
 .fd-sum__checkout--alt { background: rgba(255,255,255,.1); box-shadow: none; margin-top: 4px; }
-.fd-sum__checkout--alt:hover { background: rgba(255,255,255,.18); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-sum__checkout--alt:hover { background: rgba(255,255,255,.18); }
+}
 .fd-sum__note { font-size: 13px; color: rgba(255,255,255,.5); margin: 12px 0 0; }
 
 @media (max-width: 1199px) {
@@ -1295,18 +1446,24 @@ a { text-decoration: none; }
 .fd-footer__title { font-family: var(--fd-font-display); font-weight: 600; color: #fff; font-size: 18px; margin: 0 0 18px; }
 .fd-footer__links { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
 .fd-footer__links a { color: rgba(255,255,255,.66); font-size: 14px; transition: color .15s ease, padding .15s ease; }
-.fd-footer__links a:hover { color: var(--fd-amber); padding-left: 4px; }
+@media (hover: hover) and (pointer: fine) {
+    .fd-footer__links a:hover { color: var(--fd-amber); padding-left: 4px; }
+}
 .fd-footer .newletter-form .input-group { display: flex; gap: 8px; background: rgba(255,255,255,.06); border-radius: 12px; padding: 6px; }
 .fd-footer .newletter-form input { flex: 1; border: 0; background: transparent; color: #fff; padding: 10px 12px; outline: 0; }
 .fd-footer .newletter-form input::placeholder { color: rgba(255,255,255,.4); }
 .fd-footer .newletter-form button { border-radius: 10px !important; padding: 10px 16px !important; box-shadow: none !important; }
 .fd-footer .social-icons { list-style: none; display: flex; gap: 10px; padding: 0; margin: 16px 0 0; }
 .fd-footer .social-icons a { width: 40px; height: 40px; border-radius: 11px; background: rgba(255,255,255,.08); color: #fff; display: inline-flex; align-items: center; justify-content: center; transition: background .15s ease; }
-.fd-footer .social-icons a:hover { background: var(--fd-amber); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-footer .social-icons a:hover { background: var(--fd-amber); }
+}
 .fd-footer .pay-img img { height: 34px; margin: 0 8px 8px 0; border-radius: 6px; background: #fff; padding: 3px; }
 .fd-footer__bottom { border-top: 1px solid rgba(255,255,255,.08); padding: 22px 0; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
 .fd-footer__bottom, .fd-footer__bottom a { font-size: 13.5px; color: rgba(255,255,255,.6); }
-.fd-footer__bottom a:hover { color: var(--fd-amber); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-footer__bottom a:hover { color: var(--fd-amber); }
+}
 .fd-call-fab {
     position: fixed; bottom: 22px; left: 22px; z-index: 999;
     display: inline-flex; align-items: center; gap: 8px;
@@ -1315,7 +1472,9 @@ a { text-decoration: none; }
     padding: 12px 18px; border-radius: 999px;
     box-shadow: 0 14px 30px -12px rgba(245,166,35,.8);
 }
-.fd-call-fab:hover { background: var(--fd-amber-d); color: #fff; }
+@media (hover: hover) and (pointer: fine) {
+    .fd-call-fab:hover { background: var(--fd-amber-d); color: #fff; }
+}
 
 /* =============================================================
    RESPONSIVE
@@ -1367,7 +1526,9 @@ a { text-decoration: none; }
 }
 .fd-mobile-nav.open { transform: none; visibility: visible; transition: transform .28s ease, visibility 0s; }
 .fd-mobile-nav a { display: block; padding: 12px 8px; color: var(--fd-ink); font-family: var(--fd-font-display); font-weight: 500; border-bottom: 1px solid var(--fd-line); }
-.fd-mobile-nav a:hover { color: var(--fd-amber); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-mobile-nav a:hover { color: var(--fd-amber); }
+}
 .fd-mobile-nav__close { font-size: 26px; color: var(--fd-ink); background: none; border: 0; cursor: pointer; }
 .fd-backdrop { position: fixed; inset: 0; background: rgba(20,20,46,.5); z-index: 1999; opacity: 0; visibility: hidden; transition: .28s; }
 .fd-backdrop.open { opacity: 1; visibility: visible; }
@@ -1397,7 +1558,9 @@ a { text-decoration: none; }
     padding: 8px 2px; margin: 0; font-size: 14.5px; color: var(--fd-body);
     transition: color .15s ease;
 }
-.fd-opt:hover { color: var(--fd-ink); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-opt:hover { color: var(--fd-ink); }
+}
 .fd-opt__input { position: absolute; opacity: 0; width: 0; height: 0; }
 .fd-opt__mark {
     flex: 0 0 auto; width: 20px; height: 20px; border: 1.5px solid #d7d7e3; background: #fff;
@@ -1464,9 +1627,11 @@ a { text-decoration: none; }
 .fd-field textarea { resize: vertical; min-height: 96px; }
 .fd-field input::placeholder,
 .fd-field textarea::placeholder { color: #b3b3c6; }
-.fd-field input:hover,
-.fd-field select:hover,
-.fd-field textarea:hover { border-color: #d2d2e0; }
+@media (hover: hover) and (pointer: fine) {
+    .fd-field input:hover,
+    .fd-field select:hover,
+    .fd-field textarea:hover { border-color: #d2d2e0; }
+}
 .fd-field input:focus,
 .fd-field select:focus,
 .fd-field textarea:focus {
@@ -1545,9 +1710,11 @@ a { text-decoration: none; }
     border-color: rgba(255, 255, 255, .28) !important;
     color: #fff !important; background: transparent !important;
 }
-.fd-req-cta .fd-btn--ghost:hover {
-    border-color: var(--fd-amber) !important;
-    color: var(--fd-amber) !important;
+@media (hover: hover) and (pointer: fine) {
+    .fd-req-cta .fd-btn--ghost:hover {
+        border-color: var(--fd-amber) !important;
+        color: var(--fd-amber) !important;
+    }
 }
 
 .fd-req-cta__cards { display: grid; gap: 14px; }
@@ -1609,7 +1776,9 @@ a { text-decoration: none; }
     display: inline-flex; align-items: center; justify-content: center;
     cursor: pointer; transition: background .18s ease;
 }
-.fd-req-modal__close:hover { background: rgba(255, 255, 255, .2); }
+@media (hover: hover) and (pointer: fine) {
+    .fd-req-modal__close:hover { background: rgba(255, 255, 255, .2); }
+}
 .fd-req-modal .modal-body { padding: 26px; background: var(--fd-surface); }
 
 /* ---------- standalone page ---------- */
@@ -1679,5 +1848,189 @@ a { text-decoration: none; }
     .fd-card__add {
         width: 100%;
         flex-shrink: 0;
+    }
+}
+
+/* =============================================================
+   PLATFORM OVERRIDES — last on purpose.
+   These must beat the component rules defined above, and they sit at
+   equal specificity, so source order is what decides. Do not move up.
+   ============================================================= */
+/* Inputs below 16px make iOS zoom the page on focus and never zoom back.
+   Only raise it where the pointer is coarse, so desktop keeps its scale. */
+@media (pointer: coarse) {
+    input,
+    select,
+    textarea,
+    .fd-field input,
+    .fd-field select,
+    .fd-field textarea,
+    .fd-hero__search input,
+    .sortProduct,
+    .productPaginate {
+        /* !important because component classes outrank these element
+           selectors, and anything under 16px makes iOS zoom the page on
+           focus and never zoom back out. */
+        font-size: 16px !important;
+    }
+}
+/* Touch has no hover, so anything revealed only on hover does not exist on a
+   phone. The wishlist/quick-view tools were opacity:0 until hover — invisible
+   and unreachable on every touch device. Show them outright there. */
+@media (hover: none) {
+    /* !important on purpose: this is a platform-correctness rule, not styling.
+       Without hover there is no other way to reach these controls, so no
+       component rule may win over it. */
+    .fd-card__tools {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
+/* Fixed chrome must sit clear of the notch and the home indicator. */
+.fd-call-fab {
+    bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+    left: calc(22px + env(safe-area-inset-left, 0px));
+}
+.fd-mobile-nav {
+    padding-top: calc(24px + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    /* the panel owns vertical scrolling; don't chain it to the page */
+    overscroll-behavior: contain;
+}
+.fd-closed-bar {
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+}
+
+/* =============================================================
+   TYPOGRAPHY — tracking and leading are size-specific
+   Everything here rendered at tracking:normal, which is wrong at both
+   ends of the scale: letters drift apart as display type grows, and
+   small UI labels pack too tightly to scan. Tighten as size goes up,
+   loosen slightly as it goes down. Leading moves inversely to size.
+   ============================================================= */
+
+/* Display — 28px and up. Negative tracking, tight leading. */
+.fd-hero__title,
+.fd-shead__title,
+.fd-why__title,
+.fd-shop__title,
+.fd-cart__title,
+.fd-req-cta__title {
+    letter-spacing: -0.022em;
+    line-height: 1.12;
+    /* let the face use its display cut where one exists */
+    font-optical-sizing: auto;
+    /* stop long dish names breaking mid-word on narrow phones */
+    text-wrap: balance;
+}
+
+/* Sub-display — section subtitles and card headings, ~17-24px. */
+.fd-special__name,
+.fd-sum__title,
+.fd-req-modal__head h3,
+.fd-req-page__aside h3 {
+    letter-spacing: -0.012em;
+    line-height: 1.2;
+}
+
+.fd-card__title {
+    letter-spacing: -0.008em;
+}
+
+/* Small UI text — 14px and below reads cramped at 0; open it up a little. */
+.fd-field label,
+.fd-card__tag,
+.fd-card__stock,
+.fd-req-cta__kicker,
+.fd-shead__kicker,
+.fd-req__note {
+    letter-spacing: 0.012em;
+}
+
+/* All-caps kickers need more than lowercase does — caps have no
+   ascender/descender variety to separate them. */
+.fd-req-cta__kicker,
+.fd-shead__kicker {
+    letter-spacing: 0.14em;
+}
+
+/* Body copy sits at 0 and leans on leading instead. */
+.fd-why__sub,
+.fd-req-cta__sub,
+.fd-shop__sub {
+    letter-spacing: 0;
+    line-height: 1.65;
+}
+
+/* =============================================================
+   HEADER — fit the phone
+   At 375px the bar had 339px of usable width but needed 372
+   (logo 182 + gap 24 + actions 166), so the burger sat ~15px off
+   the right edge and could not be fully tapped. The logo is the
+   flexible part; the controls are not.
+   ============================================================= */
+@media (max-width: 575px) {
+    .fd-header__bar {
+        gap: 12px;
+        height: 64px;
+    }
+
+    /* the logo gives up space first... */
+    .fd-header__logo {
+        min-width: 0;
+        flex: 0 1 auto;
+    }
+    .fd-header__logo img {
+        height: 40px;
+        max-width: 140px;
+    }
+
+    /* ...the controls never do, so they stay on screen and tappable */
+    .fd-header__actions {
+        flex: 0 0 auto;
+        gap: 10px;
+        margin-left: auto;
+    }
+}
+
+/* =============================================================
+   HERO HEADLINE — stroke must scale with the type
+   The outline is a fixed 3px. At the 54px desktop size that reads as
+   a deliberate outline; at the 30px phone size it is ~10% of the cap
+   height, so the strokes collide inside the counters and the words
+   turn muddy — which, with the hard offset shadow behind, looked like
+   a rendering fault rather than a style.
+   ============================================================= */
+@media (max-width: 767px) {
+    .fd-hero__title {
+        -webkit-text-stroke-width: 1.5px;
+        /* softer, closer shadow so it reads as depth, not a ghost */
+        text-shadow: 2px 3px 0 rgba(20, 20, 46, .18);
+    }
+}
+
+/* =============================================================
+   TOUCH TARGETS — 44px minimum
+   The card "Add" button rendered 35px tall, and the sort/per-page
+   selects similar. Below ~44px a control is hard to hit accurately
+   with a thumb, so taps land on the card behind it instead.
+   ============================================================= */
+@media (pointer: coarse) {
+    .fd-card__add,
+    .fd-btn,
+    .fd-icon-btn,
+    .fd-qty__btn,
+    .fd-burger,
+    .sortProduct,
+    .productPaginate,
+    .fd-filterbtn {
+        min-height: 44px;
+    }
+
+    .fd-card__add {
+        /* keep the label centred now that the box is taller */
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
     }
 }
